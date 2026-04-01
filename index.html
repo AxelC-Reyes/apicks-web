@@ -6,15 +6,15 @@
 <title>APIcks - Sharp Bot MLB</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
   :root{--bg:#080c10;--surface:#0e1520;--border:#1a2535;--accent:#00d4ff;--green:#00ff88;--red:#ff3d5a;--yellow:#ffd700;--purple:#b86eff;--muted:#4a6080;--text:#c8dff0;--heading:#ffffff;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
 
-  /* ── HEADER ── */
   header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,#080c10 0%,#0a1220 100%);position:sticky;top:0;z-index:100;}
   .logo{display:flex;align-items:center;gap:12px;}
-  .logo-img{width:52px;height:52px;border-radius:10px;object-fit:cover;} /* sin borde */
+  .logo-img{width:52px;height:52px;border-radius:10px;object-fit:cover;}
   .logo-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--heading);}
   .logo-byline{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--yellow);letter-spacing:1px;margin-top:1px;opacity:0.85;}
   .logo-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:2px;margin-top:-2px;}
@@ -25,10 +25,8 @@
   .clock{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
   .updated{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
 
-  /* ── MAIN ── */
   main{max-width:1400px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 
-  /* ── STATS GRID ── */
   .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
   .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 14px;position:relative;overflow:hidden;}
   .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
@@ -43,19 +41,16 @@
   .stat-sub{font-size:10px;color:var(--muted);margin-top:5px;}
   .positive{color:var(--green);} .negative{color:var(--red);}
 
-  /* ── CHARTS ── */
   .two-columns{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;}
   .chart-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--heading);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
   .chart-title span{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
   canvas{max-height:280px;width:100%;}
 
-  /* ── SECTION ── */
   .section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
   .section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--heading);}
   .section-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 8px;background:var(--border);border-radius:4px;color:var(--accent);letter-spacing:1px;}
 
-  /* ── PICKS ── */
   .picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
   .pick-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
   .pick-card.cancelado{opacity:.5;border-color:var(--red);}
@@ -76,7 +71,6 @@
   .result-pending{background:rgba(77,96,128,.2);color:var(--muted);}
   .empty-state{text-align:center;padding:50px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
 
-  /* ── TABLES ── */
   .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;min-width:500px;}
   th{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);}
@@ -90,41 +84,75 @@
   .badge-pregame{background:#301a10;color:var(--yellow);}
   .badge-manual{background:#252535;color:var(--muted);}
 
-  /* ── FOOTER ── */
+  /* SECCIÓN CONÓCENOS */
+  .about-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .about-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  .social-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.2s ease;
+    color: white;
+    text-decoration: none;
+  }
+  .social-icon.instagram {
+    background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af);
+  }
+  .social-icon.facebook {
+    background: #1877f2;
+  }
+  .social-icon.youtube {
+    background: #ff0000;
+  }
+  .social-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
   footer{text-align:center;padding:24px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px;}
   footer span{color:var(--accent);}
 
-  /* ══════════════════════════════════════
-     RESPONSIVE — MÓVIL
-  ══════════════════════════════════════ */
   @media(max-width:1100px){
     .stats-grid{grid-template-columns:repeat(3,1fr);}
     .two-columns{grid-template-columns:1fr;}
   }
-
   @media(max-width:700px){
     header{padding:12px 16px;flex-wrap:wrap;gap:10px;}
     .logo-img{width:44px;height:44px;}
     .logo-text{font-size:22px;}
     .logo-sub{font-size:9px;}
-    .updated{display:none;} /* ocultar en móvil para no saturar */
+    .updated{display:none;}
     .header-right{gap:10px;}
-
     main{padding:16px 12px;gap:16px;}
-
     .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
     .stat-value{font-size:28px;}
-
     .picks-grid{grid-template-columns:1fr;}
-
     .section-title{font-size:17px;}
-
     .chart-title{font-size:15px;}
-
     th{font-size:9px;padding:10px 10px;}
     td{font-size:12px;padding:10px 10px;}
   }
-
   @media(max-width:400px){
     .stats-grid{grid-template-columns:repeat(2,1fr);}
     .stat-value{font-size:24px;}
@@ -216,7 +244,9 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Fecha</th><th>Partido</th><th>Patrón</th><th>Momio Ini</th><th>Momio Fin</th><th>Resultado</th><th>Yield</th></tr></thead>
+        <thead>
+          <tr><th>Fecha</th><th>Partido</th><th>Patrón</th><th>Momio Ini</th><th>Momio Fin</th><th>Resultado</th><th>Yield</th></tr>
+        </thead>
         <tbody><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Sin historial aún.</td></tr></tbody>
       </table>
     </div>
@@ -234,10 +264,44 @@
       </table>
     </div>
   </div>
+
+  <!-- SECCIÓN CONÓCENOS -->
+<div style="border-top:1px solid var(--border);padding-top:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Conócenos</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--heading);">Ponce de Leon Picks</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;">análisis · líneas · picks MLB</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="https://www.instagram.com/ponce_de_leon_picks?igsh=MW1sNmY5OTlzM25tYg==" target="_blank" rel="noopener noreferrer"
+         style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:30px;transition:all .2s;"
+         onmouseover="this.style.borderColor='#e1306c';this.style.color='#e1306c';"
+         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="https://www.facebook.com/PoncedeLeonpicks" target="_blank" rel="noopener noreferrer"
+         style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:30px;transition:all .2s;"
+         onmouseover="this.style.borderColor='#1877f2';this.style.color='#1877f2';"
+         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
+        <i class="fab fa-facebook-f"></i>
+      </a>
+      <a href="https://www.youtube.com/@Ponce_de_leon_picks" target="_blank" rel="noopener noreferrer"
+         style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:30px;transition:all .2s;"
+         onmouseover="this.style.borderColor='#ff0000';this.style.color='#ff0000';"
+         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
+        <i class="fab fa-youtube"></i>
+      </a>
+    </div>
+
+  </div>
+</div>
 </main>
 
 <footer>
-  APIcks · <span>by Ponce de Leon Picks, Axel</span> · Datos: Bet365 via odds-api.io · IA: Claude (Anthropic)
+  APIcks · <span>by Ponce de Leon Picks, Axel</span> · Datos: Bet365 via odds-api.io · IA: Deep Seeker 3000
 </footer>
 
 <script>
@@ -252,38 +316,14 @@ updateClock();
 
 new Chart(document.getElementById('yieldChart').getContext('2d'), {
   type:'line',
-  data:{
-    labels:['Inicio'],
-    datasets:[{
-      label:'Yield Acumulado (%)', data:[0],
-      borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.05)',
-      fill:true, tension:0.3, pointBackgroundColor:'#00d4ff', pointRadius:3
-    }]
-  },
-  options:{
-    responsive:true,
-    plugins:{legend:{labels:{color:'#c8dff0',font:{size:10}}}},
-    scales:{
-      y:{grid:{color:'#1a2535'},ticks:{color:'#4a6080'}},
-      x:{grid:{display:false},ticks:{color:'#4a6080',maxTicksLimit:8}}
-    }
-  }
+  data:{ labels:['Inicio'], datasets:[{ label:'Yield Acumulado (%)', data:[0], borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.05)', fill:true, tension:0.3, pointBackgroundColor:'#00d4ff', pointRadius:3 }] },
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#c8dff0', font:{ size:10 } } } }, scales:{ y:{ grid:{ color:'#1a2535' }, ticks:{ color:'#4a6080' } }, x:{ grid:{ display:false }, ticks:{ color:'#4a6080', maxTicksLimit:8 } } } }
 });
 
 new Chart(document.getElementById('favChart').getContext('2d'), {
   type:'bar',
-  data:{
-    labels:['Favorito','Underdog'],
-    datasets:[{label:'Win Rate (%)',data:[0,0],backgroundColor:['#00d4ff','#ffd700'],borderRadius:6}]
-  },
-  options:{
-    responsive:true,
-    plugins:{legend:{labels:{color:'#c8dff0'}}},
-    scales:{
-      y:{max:100,grid:{color:'#1a2535'},ticks:{color:'#4a6080',callback:v=>v+'%'}},
-      x:{ticks:{color:'#4a6080'}}
-    }
-  }
+  data:{ labels:['Favorito','Underdog'], datasets:[{ label:'Win Rate (%)', data:[0,0], backgroundColor:['#00d4ff','#ffd700'], borderRadius:6 }] },
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#c8dff0' } } }, scales:{ y:{ max:100, grid:{ color:'#1a2535' }, ticks:{ color:'#4a6080', callback:v=>v+'%' } }, x:{ ticks:{ color:'#4a6080' } } } }
 });
 </script>
 </body>
