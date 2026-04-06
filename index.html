@@ -3,305 +3,551 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APIcks - Sharp Bot MLB</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<title>APIcks - Ponce de Leon Picks</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root{--bg:#080c10;--surface:#0e1520;--border:#1a2535;--accent:#00d4ff;--green:#00ff88;--red:#ff3d5a;--yellow:#ffd700;--purple:#b86eff;--muted:#4a6080;--text:#c8dff0;--heading:#ffffff;}
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
+:root{--bg:#080c10;--surface:#0e1520;--border:#1a2535;--accent:#00d4ff;--green:#00ff88;--red:#ff3d5a;--yellow:#ffd700;--purple:#b86eff;--muted:#4a6080;--text:#c8dff0;--heading:#fff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
 
-  /* HEADER */
-  header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,#080c10,#0a1220);position:sticky;top:0;z-index:100;gap:12px;}
-  .logo{display:flex;align-items:center;gap:12px;min-width:0;}
-  .logo-img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0;}
-  .logo-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--heading);white-space:nowrap;}
-  .logo-byline{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--yellow);letter-spacing:1px;margin-top:1px;opacity:.85;}
-  .logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:1px;margin-top:1px;}
-  .header-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
-  .live-indicator{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);}
-  .dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-  .clock{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
-  .updated{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+/* INTRO */
+#intro-screen{position:fixed;inset:0;background:#080c10;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+#intro-logo{width:100px;height:100px;border-radius:18px;object-fit:cover;opacity:0;transform:scale(0.7);transition:opacity 0.6s ease,transform 0.6s cubic-bezier(0.34,1.56,0.64,1);}
+#intro-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,8vw,62px);letter-spacing:6px;color:#fff;opacity:0;transform:translateY(10px);transition:opacity 0.5s ease,transform 0.5s ease;}
+#intro-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#00d4ff;letter-spacing:3px;opacity:0;transition:opacity 0.5s ease;}
+#intro-bar-wrap{width:110px;height:1px;background:#1a2535;border-radius:1px;overflow:hidden;margin-top:8px;}
+#intro-bar{height:100%;width:0;background:linear-gradient(90deg,#00d4ff,#00ff88);transition:width 1.8s ease;}
+#page-wrapper{opacity:0;transition:opacity 0.7s ease;}
+#page-wrapper.visible{opacity:1;}
 
-  /* MAIN */
-  main{max-width:1400px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,#080c10,#0a1220);position:sticky;top:0;z-index:100;gap:12px;}
+.logo{display:flex;align-items:center;gap:12px;min-width:0;}
+.logo-img{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0;}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--heading);}
+.logo-byline{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--yellow);letter-spacing:1px;margin-top:1px;opacity:.85;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:1px;}
+.header-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.live-txt{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.btn-login{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.btn-login:hover{border-color:var(--accent);color:var(--accent);}
+.btn-logout{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;transition:all .2s;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
 
-  /* STATS */
-  .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 14px;position:relative;overflow:hidden;}
-  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-  .stat-card.yield::before{background:var(--green);}
-  .stat-card.profit::before{background:var(--accent);}
-  .stat-card.avg-odds::before{background:var(--yellow);}
-  .stat-card.hit-rate::before{background:var(--purple);}
-  .stat-card.stake::before{background:#ff884d;}
-  .stat-card.bank::before{background:var(--muted);}
-  .stat-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
-  .stat-value{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;color:var(--heading);}
-  .stat-sub{font-size:10px;color:var(--muted);margin-top:5px;}
-  .positive{color:var(--green);}.negative{color:var(--red);}
+/* MAIN */
+main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 
-  /* CHARTS */
-  .two-columns{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;}
-  .chart-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--heading);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-  .chart-title span{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
-  canvas{max-height:260px;width:100%;}
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.sc-green::before{background:var(--green);}
+.sc-accent::before{background:var(--accent);}
+.sc-yellow::before{background:var(--yellow);}
+.sc-red::before{background:var(--red);}
+.stat-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;color:var(--heading);}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:4px;}
 
-  /* SECTIONS */
-  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-  .section-title{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:3px;color:var(--heading);}
-  .section-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;background:var(--border);border-radius:4px;color:var(--accent);letter-spacing:1px;}
+/* SECTION HEADERS */
+.sec-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--heading);}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;background:var(--border);border-radius:4px;color:var(--accent);letter-spacing:1px;}
 
-  /* PICKS */
-  .picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
-  .pick-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
-  .pick-card.cancelado{opacity:.5;border-color:var(--red);}
-  .pick-matchup{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--heading);margin-bottom:10px;}
-  .pick-matchup span{color:var(--muted);font-size:13px;}
-  .pick-details{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
-  .pick-team-badge{background:rgba(0,212,255,.12);border:1px solid rgba(0,212,255,.3);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;border-radius:4px;}
-  .pick-team-badge.underdog{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.3);color:var(--yellow);}
-  .pick-odds{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;color:var(--heading);}
-  .confidence-bar-wrap{margin:10px 0;}
-  .confidence-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;}
-  .confidence-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-  .confidence-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));}
-  .pick-pattern{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);padding:5px 9px;background:rgba(255,255,255,.03);border-radius:4px;border-left:2px solid var(--accent);margin-bottom:8px;}
-  .pick-result{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;border-radius:4px;margin-top:4px;}
-  .result-win{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3);}
-  .result-loss{background:rgba(255,61,90,.15);color:var(--red);border:1px solid rgba(255,61,90,.3);}
-  .result-pending{background:rgba(77,96,128,.2);color:var(--muted);}
-  .empty-state{text-align:center;padding:48px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+/* PICKS GRID */
+.picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
 
-  /* TABLES */
-  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  table{width:100%;border-collapse:collapse;min-width:480px;}
-  th{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);}
-  td{padding:11px 14px;font-size:12px;border-bottom:1px solid rgba(26,37,53,.5);}
-  .mono{font-family:'IBM Plex Mono',monospace;}
-  .badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;}
-  .badge-win{background:rgba(0,255,136,.2);color:var(--green);}
-  .badge-loss{background:rgba(255,61,90,.2);color:var(--red);}
-  .badge-medianoche{background:#1a2050;color:#6080ff;}
-  .badge-mediodia{background:#1a3020;color:var(--green);}
-  .badge-pregame{background:#301a10;color:var(--yellow);}
-  .badge-manual{background:#252535;color:var(--muted);}
+/* PICK CARD */
+.pick-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;}
+.pick-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;}
+.pick-axel::before{background:var(--accent);}
+.pick-jared::before{background:var(--yellow);}
+.pick-fernando::before{background:var(--purple);}
+.pick-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.analyst-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;letter-spacing:1px;font-weight:600;}
+.ab-axel{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid rgba(0,212,255,.3);}
+.ab-jared{background:rgba(255,215,0,.12);color:var(--yellow);border:1px solid rgba(255,215,0,.3);}
+.ab-fernando{background:rgba(184,110,255,.12);color:var(--purple);border:1px solid rgba(184,110,255,.3);}
+.pick-status{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;}
+.ps-pending{background:rgba(74,96,128,.2);color:var(--muted);}
+.ps-win{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3);}
+.ps-loss{background:rgba(255,61,90,.15);color:var(--red);border:1px solid rgba(255,61,90,.3);}
+.matchup{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--heading);margin-bottom:8px;line-height:1.1;}
+.matchup span{color:var(--muted);font-size:14px;}
+.pick-type-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.pick-type{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 10px;border-radius:4px;font-weight:600;}
+.pt-ml{background:rgba(0,212,255,.12);color:var(--accent);border:1px solid rgba(0,212,255,.3);}
+.pt-ou{background:rgba(255,215,0,.1);color:var(--yellow);border:1px solid rgba(255,215,0,.3);}
+.pick-odds-dec{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--heading);}
+.pick-odds-am{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+.pick-meta{display:flex;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;}
+.casino-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px;}
+.cd-bet365{background:#00c753;}
+.cd-play{background:#ff6b35;}
+.result-score{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);padding-top:8px;border-top:1px solid var(--border);}
+.result-btns{display:flex;gap:6px;margin-top:8px;}
+.rbtn{flex:1;padding:5px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.rbtn-win{border:1px solid rgba(0,255,136,.3);background:rgba(0,255,136,.1);color:var(--green);}
+.rbtn-win:hover{background:rgba(0,255,136,.2);}
+.rbtn-loss{border:1px solid rgba(255,61,90,.3);background:rgba(255,61,90,.1);color:var(--red);}
+.rbtn-loss:hover{background:rgba(255,61,90,.2);}
 
-  /* CONÓCENOS */
-  .conocenos{border-top:1px solid var(--border);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-  .conocenos-info{}
-  .conocenos-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
-  .conocenos-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--heading);}
-  .conocenos-desc{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
-  .social-row{display:flex;align-items:center;gap:8px;}
-  .social-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:13px;transition:border-color .2s,color .2s;}
-  .social-btn:hover.ig{border-color:#e1306c;color:#e1306c;}
-  .social-btn:hover.fb{border-color:#1877f2;color:#1877f2;}
-  .social-btn:hover.yt{border-color:#ff0000;color:#ff0000;}
+/* ANALYSTS */
+.analysts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.analyst-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;}
+.analyst-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;}
+.av-axel{background:rgba(0,212,255,.15);color:var(--accent);border:2px solid rgba(0,212,255,.4);}
+.av-jared{background:rgba(255,215,0,.12);color:var(--yellow);border:2px solid rgba(255,215,0,.4);}
+.av-fernando{background:rgba(184,110,255,.12);color:var(--purple);border:2px solid rgba(184,110,255,.4);}
+.analyst-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--heading);margin-bottom:3px;}
+.analyst-casino{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:12px;}
+.analyst-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.ast{background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;text-align:center;}
+.ast-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--heading);}
+.ast-lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;}
 
-  /* FOOTER */
-  footer{text-align:center;padding:20px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px;line-height:1.8;}
-  footer span{color:var(--accent);}
+/* LOGIN */
+.login-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:360px;margin:0 auto;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--heading);margin-bottom:4px;}
+.login-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:20px;letter-spacing:1px;}
+.user-select{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.user-btn{padding:10px 4px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s;text-align:center;}
+.ub-axel{color:var(--accent);}
+.ub-axel.sel,.ub-axel:hover{border-color:var(--accent);background:rgba(0,212,255,.1);}
+.ub-jared{color:var(--yellow);}
+.ub-jared.sel,.ub-jared:hover{border-color:var(--yellow);background:rgba(255,215,0,.08);}
+.ub-fernando{color:var(--purple);}
+.ub-fernando.sel,.ub-fernando:hover{border-color:var(--purple);background:rgba(184,110,255,.08);}
+.pin-input{width:100%;background:#080c10;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--heading);font-family:'IBM Plex Mono',monospace;font-size:20px;letter-spacing:8px;text-align:center;margin-bottom:12px;outline:none;}
+.pin-input:focus{border-color:var(--accent);}
+.btn-enter{width:100%;padding:10px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,212,255,.12);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.btn-enter:hover{background:rgba(0,212,255,.22);}
+.error-msg{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--red);text-align:center;margin-top:8px;min-height:14px;}
 
-  /* ── RESPONSIVE ── */
-  @media(max-width:1100px){
-    .stats-grid{grid-template-columns:repeat(3,1fr);}
-    .two-columns{grid-template-columns:1fr;}
-  }
-  @media(max-width:700px){
-    header{padding:12px 14px;}
-    .logo-img{width:42px;height:42px;}
-    .logo-text{font-size:21px;}
-    .logo-byline,.logo-sub{font-size:8px;}
-    .updated{display:none;}
-    main{padding:14px 12px;gap:16px;}
-    .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
-    .stat-value{font-size:27px;}
-    .stat-label{font-size:8px;}
-    .picks-grid{grid-template-columns:1fr;}
-    .section-title{font-size:16px;}
-    .chart-title{font-size:14px;}
-    th{font-size:8px;padding:9px 10px;}
-    td{font-size:11px;padding:9px 10px;}
-    .conocenos{flex-direction:column;align-items:flex-start;gap:12px;}
-    .social-btn{width:36px;height:36px;font-size:15px;}
-  }
-  @media(max-width:400px){
-    .logo-text{font-size:18px;letter-spacing:2px;}
-    .stat-value{font-size:23px;}
-    header{flex-wrap:wrap;}
-  }
+/* FORM */
+.pick-form{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.form-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.form-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--heading);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.ff label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:5px;}
+.ff input,.ff select{width:100%;background:#080c10;border:1px solid var(--border);border-radius:7px;padding:8px 12px;color:var(--heading);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;transition:border-color .2s;}
+.ff input:focus,.ff select:focus{border-color:var(--accent);}
+.ff select option{background:#0e1520;}
+.ff input[readonly]{color:var(--muted);}
+.btn-submit{padding:10px 22px;border-radius:8px;border:1px solid var(--green);background:rgba(0,255,136,.12);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.btn-submit:hover{background:rgba(0,255,136,.22);}
+
+/* CONÓCENOS */
+.conocenos{border-top:1px solid var(--border);padding-top:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.social-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:13px;transition:border-color .2s,color .2s;}
+
+/* FOOTER */
+footer{text-align:center;padding:20px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px;line-height:1.8;}
+footer span{color:var(--accent);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;grid-column:1/-1;}
+
+/* RESPONSIVE */
+@media(max-width:900px){.analysts-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:700px){
+  header{padding:12px 14px;flex-wrap:wrap;}
+  .logo-img{width:40px;height:40px;}
+  .logo-text{font-size:21px;}
+  .logo-byline,.logo-sub{font-size:8px;}
+  main{padding:14px 12px;gap:16px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .stat-val{font-size:28px;}
+  .picks-grid{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .analysts-grid{grid-template-columns:1fr;gap:10px;}
+  .sec-title{font-size:17px;}
+  .conocenos{flex-direction:column;align-items:flex-start;}
+}
+@media(max-width:400px){.logo-text{font-size:18px;letter-spacing:2px;}.stat-val{font-size:24px;}}
 </style>
 </head>
 <body>
 
+<!-- INTRO ANIMACIÓN -->
+<div id="intro-screen">
+  <img id="intro-logo" src="dddlogo.png" alt="APIcks"
+    onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22%3E%3Crect width=%2236%22 height=%2236%22 fill=%22%2300d4ff%22/%3E%3Ctext x=%2218%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22%3E⚾%3C/text%3E%3C/svg%3E';">
+  <div id="intro-title">PONCE DE LEON PICKS</div>
+  <div id="intro-sub">MLB, NBA, NFL y soccer</div>
+  <div id="intro-bar-wrap"><div id="intro-bar"></div></div>
+</div>
+
+<div id="page-wrapper">
+
 <header>
   <div class="logo">
-    <img src="dddlogo.png" alt="Logo" class="logo-img"
-         onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22%3E%3Crect width=%2236%22 height=%2236%22 fill=%22%2300d4ff%22/%3E%3Ctext x=%2218%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22%3E⚾%3C/text%3E%3C/svg%3E';">
+    <img src="ddelogo.png" alt="Logo" class="logo-img"
+      onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22%3E%3Crect width=%2236%22 height=%2236%22 fill=%22%2300d4ff%22/%3E%3Ctext x=%2218%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22%3E⚾%3C/text%3E%3C/svg%3E';">
     <div>
-      <div class="logo-text">APIcks</div>
-      <div class="logo-byline">(by Ponce de Leon Picks, Axel)</div>
-      <div class="logo-sub">Lectura de líneas · rendimiento · la mera vena</div>
+      <div class="logo-text">PONCE DE LEON PICKS</div>
+      <div class="logo-byline">(by Jared, Axel y Fernando)</div>
+      <div class="logo-sub"> Picks · Lectura de líneas · Estadísticas</div>
     </div>
   </div>
   <div class="header-right">
-    <div class="live-indicator"><div class="dot"></div><span>LIVE</span></div>
-    <div class="updated">Actualizado: 2026-03-27 16:45</div>
+    <div class="live-txt"><div class="live-dot"></div>LIVE</div>
     <div class="clock" id="clock">--:-- CDMX</div>
+    <button class="btn-login" id="btn-acceso" onclick="showLogin()">⚡ ACCESO</button>
+    <button class="btn-logout" id="btn-salir" style="display:none" onclick="doLogout()">SALIR</button>
   </div>
 </header>
 
 <main>
 
-  <div class="stats-grid">
-    <div class="stat-card yield">
-      <div class="stat-label">YIELD (RENDIMIENTO)</div>
-      <div class="stat-value">0%</div>
-      <div class="stat-sub">vs bank 100u</div>
+  <!-- STATS GLOBALES -->
+  <div class="stats-row">
+    <div class="stat-card sc-green">
+      <div class="stat-label">HIT RATE</div>
+      <div class="stat-val" id="s-hitrate">--%</div>
+      <div class="stat-sub" id="s-record">0W · 0L</div>
     </div>
-    <div class="stat-card profit">
-      <div class="stat-label">PROFIT (BENEFICIO)</div>
-      <div class="stat-value">+0u</div>
-      <div class="stat-sub">neto sobre bank inicial</div>
+    <div class="stat-card sc-accent">
+      <div class="stat-label">PICKS HOY</div>
+      <div class="stat-val" id="s-hoy">0</div>
+      <div class="stat-sub">publicados hoy</div>
     </div>
-    <div class="stat-card avg-odds">
-      <div class="stat-label">CUOTA MEDIA</div>
-      <div class="stat-value">0</div>
-      <div class="stat-sub">Bet365 moneyline</div>
+    <div class="stat-card sc-yellow">
+      <div class="stat-label">RACHA ACTIVA</div>
+      <div class="stat-val" id="s-racha">--</div>
+      <div class="stat-sub" id="s-racha-sub">sin datos</div>
     </div>
-    <div class="stat-card hit-rate">
-      <div class="stat-label">HIT RATE (ACIERTOS)</div>
-      <div class="stat-value">0%</div>
-      <div class="stat-sub">0 ganados / 0 perdidos</div>
-    </div>
-    <div class="stat-card stake">
-      <div class="stat-label">STAKE PROMEDIO</div>
-      <div class="stat-value">1.0u</div>
-      <div class="stat-sub">unidades por pick</div>
-    </div>
-    <div class="stat-card bank">
-      <div class="stat-label">BANK ACTUAL</div>
-      <div class="stat-value">100u</div>
-      <div class="stat-sub">inicial: 100 unidades</div>
+    <div class="stat-card sc-red">
+      <div class="stat-label">TOTAL PICKS</div>
+      <div class="stat-val" id="s-total">0</div>
+      <div class="stat-sub">en historial</div>
     </div>
   </div>
 
-  <div class="two-columns">
-    <div class="chart-card">
-      <div class="chart-title">📈 EVOLUCIÓN DEL YIELD <span>acumulado por pick</span></div>
-      <canvas id="yieldChart" height="200"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">⭐ EFECTIVIDAD POR TIPO <span>favorito vs underdog</span></div>
-      <canvas id="favChart" height="200"></canvas>
+  <!-- LOGIN (visible solo cuando se pide) -->
+  <div id="login-section" style="display:none;">
+    <div class="login-wrap">
+      <div class="login-title">ACCESO ANALISTAS</div>
+      <div class="login-sub">SELECCIONA TU PERFIL E INGRESA PIN</div>
+      <div class="user-select">
+        <button class="user-btn ub-axel" onclick="selectUser('axel',this)">AXEL</button>
+        <button class="user-btn ub-jared" onclick="selectUser('jared',this)">JARED</button>
+        <button class="user-btn ub-fernando" onclick="selectUser('fernando',this)">FERNANDO</button>
+      </div>
+      <input type="password" class="pin-input" id="pin-input" maxlength="4" placeholder="····">
+      <button class="btn-enter" onclick="tryLogin()">ENTRAR →</button>
+      <div class="error-msg" id="error-msg"></div>
     </div>
   </div>
 
+  <!-- FORM NUEVO PICK (solo cuando logueado) -->
+  <div id="form-section" style="display:none;">
+    <div class="pick-form">
+      <div class="form-header">
+        <div class="form-title" id="form-title">NUEVO PICK</div>
+        <div id="logged-badge"></div>
+      </div>
+      <div class="form-grid">
+        <div class="ff"><label>Equipo Away</label><input type="text" id="f-away" placeholder="Yankees"></div>
+        <div class="ff"><label>Equipo Home</label><input type="text" id="f-home" placeholder="RedSox"></div>
+        <div class="ff">
+          <label>Tipo de Pick</label>
+          <select id="f-tipo">
+            <option value="ML">ML — Moneyline</option>
+            <option value="Over">Over</option>
+            <option value="Under">Under</option>
+          </select>
+        </div>
+        <div class="ff"><label>Pick (equipo o línea)</label><input type="text" id="f-sobre" placeholder="Yankees / Over 8.5"></div>
+        <div class="ff"><label>Momio Decimal</label><input type="number" id="f-dec" placeholder="1.83" step="0.01"></div>
+        <div class="ff"><label>Momio Americano</label><input type="text" id="f-am" readonly placeholder="-120"></div>
+        <div class="ff"><label>Hora del partido</label><input type="text" id="f-hora" placeholder="7:05 PM CDMX"></div>
+        <div class="ff"><label>Casino</label><input type="text" id="f-casino" readonly></div>
+      </div>
+      <button class="btn-submit" onclick="submitPick()">+ PUBLICAR PICK</button>
+    </div>
+  </div>
+
+  <!-- PICKS DE HOY -->
   <div>
-    <div class="section-header">
-      <div class="section-title">REGISTRO DE PICKS</div>
-      <div class="section-badge">0 REGISTROS</div>
+    <div class="sec-header">
+      <div class="sec-title">PICKS DE HOY</div>
+      <div class="badge" id="badge-hoy">0 PICKS</div>
     </div>
-    <div class="picks-grid">
-      <div class="empty-state">
-        <div style="font-size:28px;margin-bottom:10px">⚾</div>
-        <p>Sin picks aún — próximo análisis al mediodía CDMX.</p>
+    <div class="picks-grid" id="picks-hoy">
+      <div class="empty-state">Sin picks publicados hoy todavía.</div>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div>
+    <div class="sec-header">
+      <div class="sec-title">HISTORIAL</div>
+      <div class="badge" id="badge-hist">0 PICKS</div>
+    </div>
+    <div class="picks-grid" id="picks-hist"></div>
+  </div>
+
+  <!-- ANALISTAS -->
+  <div>
+    <div class="sec-header">
+      <div class="sec-title">ANALISTAS</div>
+      <div class="badge">PONCE DE LEON PICKS</div>
+    </div>
+    <div class="analysts-grid">
+      <div class="analyst-card">
+        <div class="analyst-avatar av-axel">AX</div>
+        <div class="analyst-name">AXEL</div>
+        <div class="analyst-casino">Bet365</div>
+        <div class="analyst-stats" id="st-axel">
+          <div class="ast"><div class="ast-val">0</div><div class="ast-lbl">W</div></div>
+          <div class="ast"><div class="ast-val">0</div><div class="ast-lbl">L</div></div>
+          <div class="ast"><div class="ast-val">--%</div><div class="ast-lbl">HIT</div></div>
+        </div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-avatar av-jared">JR</div>
+        <div class="analyst-name">JARED</div>
+        <div class="analyst-casino">PlayDoIt</div>
+        <div class="analyst-stats" id="st-jared">
+          <div class="ast"><div class="ast-val">0</div><div class="ast-lbl">W</div></div>
+          <div class="ast"><div class="ast-val">0</div><div class="ast-lbl">L</div></div>
+          <div class="ast"><div class="ast-val">--%</div><div class="ast-lbl">HIT</div></div>
+        </div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-avatar av-fernando">FE</div>
+        <div class="analyst-name">FERNANDO</div>
+        <div class="analyst-casino">PlayDoIt</div>
+        <div class="analyst-stats" id="st-fernando">
+          <div class="ast"><div class="ast-val">0</div><div class="ast-lbl">W</div></div>
+          <div class="ast"><div class="ast-val">0</div><div class="ast-lbl">L</div></div>
+          <div class="ast"><div class="ast-val">--%</div><div class="ast-lbl">HIT</div></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div>
-    <div class="section-header">
-      <div class="section-title">PATRONES REGISTRADOS</div>
-      <div class="section-badge">MOVIMIENTOS DETECTADOS</div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Fecha</th><th>Partido</th><th>Patrón</th><th>Momio Ini</th><th>Momio Fin</th><th>Resultado</th><th>Yield</th></tr></thead>
-        <tbody><tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">Sin historial aún.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div>
-    <div class="section-header">
-      <div class="section-title">SNAPSHOTS DE HOY</div>
-      <div class="section-badge">0 CAPTURAS</div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Partido</th><th>Tipo</th><th>Hora</th><th>Local</th><th>Visitante</th></tr></thead>
-        <tbody><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Sin snapshots hoy.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- CONÓCENOS -->
-  <div style="border-top:1px solid var(--border);padding-top:20px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-    
+  <div class="conocenos">
     <div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Conócenos</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--heading);">Ponce de Leon Picks</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--heading);">Ponce de Leon Picks</div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;">análisis · líneas · picks MLB</div>
     </div>
-
-    <div style="display:flex;align-items:center;gap:10px;">
-      <a href="https://www.instagram.com/ponce_de_leon_picks?igsh=MW1sNmY5OTlzM25tYg==" target="_blank" rel="noopener noreferrer"
-         style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:30px;transition:all .2s;"
-         onmouseover="this.style.borderColor='#e1306c';this.style.color='#e1306c';"
-         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
-        <i class="fab fa-instagram"></i>
-      </a>
-      <a href="https://www.facebook.com/PoncedeLeonpicks" target="_blank" rel="noopener noreferrer"
-         style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:30px;transition:all .2s;"
-         onmouseover="this.style.borderColor='#1877f2';this.style.color='#1877f2';"
-         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
-        <i class="fab fa-facebook-f"></i>
-      </a>
-      <a href="https://www.youtube.com/@Ponce_de_leon_picks" target="_blank" rel="noopener noreferrer"
-         style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:30px;transition:all .2s;"
-         onmouseover="this.style.borderColor='#ff0000';this.style.color='#ff0000';"
-         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
-        <i class="fab fa-youtube"></i>
-      </a>
+    <div style="display:flex;gap:8px;">
+      <a href="https://www.instagram.com/ponce_de_leon_picks?igsh=MW1sNmY5OTlzM25tYg==" target="_blank" class="social-btn" onmouseover="this.style.borderColor='#e1306c';this.style.color='#e1306c'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.facebook.com/PoncedeLeonpicks" target="_blank" class="social-btn" onmouseover="this.style.borderColor='#1877f2';this.style.color='#1877f2'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.youtube.com/@Ponce_de_leon_picks" target="_blank" class="social-btn" onmouseover="this.style.borderColor='red';this.style.color='red'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"><i class="fab fa-youtube"></i></a>
     </div>
-
   </div>
-</div>
 
 </main>
 
 <footer>
-  APIcks · <span>by Ponce de Leon Picks, Axel</span> · Datos: Bet365 via odds-api.io · IA: Deep Seeker 3000
+  APIcks · <span>by Ponce de Leon Picks, Axel</span> · Bet365 · PlayDoIt
 </footer>
 
+</div>
+
 <script>
-function updateClock() {
-  const cdmx = new Intl.DateTimeFormat('es-MX', {
-    timeZone:'America/Mexico_City', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
-  }).format(new Date());
-  document.getElementById('clock').textContent = cdmx + ' CDMX';
+// ── CONFIG ────────────────────────────────────────────────────
+const USERS = {
+  axel:     { pin:'1111', casino:'Bet365',   color:'axel' },
+  jared:    { pin:'2222', casino:'PlayDoIt', color:'jared' },
+  fernando: { pin:'3333', casino:'PlayDoIt', color:'fernando' }
+};
+// ⚠️ CAMBIA LOS PINES ANTES DE SUBIR A NETLIFY
+
+// ── STATE ─────────────────────────────────────────────────────
+let currentUser = null;
+let selectedUser = null;
+let picks = JSON.parse(localStorage.getItem('apicks_picks_v2') || '[]');
+
+// ── INTRO ─────────────────────────────────────────────────────
+(function(){
+  const logo  = document.getElementById('intro-logo');
+  const title = document.getElementById('intro-title');
+  const sub   = document.getElementById('intro-sub');
+  const bar   = document.getElementById('intro-bar');
+  const scr   = document.getElementById('intro-screen');
+  const page  = document.getElementById('page-wrapper');
+  setTimeout(()=>{ logo.style.opacity='1'; logo.style.transform='scale(1)'; }, 120);
+  setTimeout(()=>{ title.style.opacity='1'; title.style.transform='translateY(0)'; }, 420);
+  setTimeout(()=>{ sub.style.opacity='1'; bar.style.width='100%'; }, 680);
+  setTimeout(()=>{ logo.style.transition='transform 0.35s ease'; logo.style.transform='scale(1.07)'; setTimeout(()=>logo.style.transform='scale(1)',350); }, 1900);
+  setTimeout(()=>{ scr.style.transition='opacity 0.7s ease'; scr.style.opacity='0'; scr.style.pointerEvents='none'; page.classList.add('visible'); }, 2500);
+  setTimeout(()=>scr.remove(), 3300);
+})();
+
+// ── RELOJ ─────────────────────────────────────────────────────
+function updateClock(){
+  document.getElementById('clock').textContent =
+    new Intl.DateTimeFormat('es-MX',{timeZone:'America/Mexico_City',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date())+' CDMX';
 }
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(updateClock,1000); updateClock();
 
-new Chart(document.getElementById('yieldChart').getContext('2d'), {
-  type:'line',
-  data:{labels:['Inicio'],datasets:[{label:'Yield Acumulado (%)',data:[0],borderColor:'#00ff88',backgroundColor:'rgba(0,255,136,0.05)',fill:true,tension:0.3,pointBackgroundColor:'#00d4ff',pointRadius:3}]},
-  options:{responsive:true,plugins:{legend:{labels:{color:'#c8dff0',font:{size:10}}}},scales:{y:{grid:{color:'#1a2535'},ticks:{color:'#4a6080'}},x:{grid:{display:false},ticks:{color:'#4a6080',maxTicksLimit:8}}}}
+// ── DECIMAL → AMERICANO ───────────────────────────────────────
+function decToAm(d){
+  d=parseFloat(d);
+  if(!d||isNaN(d)) return '';
+  return d>=2 ? '+'+Math.round((d-1)*100) : Math.round(-100/(d-1)).toString();
+}
+document.getElementById('f-dec').addEventListener('input',function(){
+  document.getElementById('f-am').value = decToAm(this.value);
 });
 
-new Chart(document.getElementById('favChart').getContext('2d'), {
-  type:'bar',
-  data:{labels:['Favorito','Underdog'],datasets:[{label:'Win Rate (%)',data:[0,0],backgroundColor:['#00d4ff','#ffd700'],borderRadius:6}]},
-  options:{responsive:true,plugins:{legend:{labels:{color:'#c8dff0'}}},scales:{y:{max:100,grid:{color:'#1a2535'},ticks:{color:'#4a6080',callback:v=>v+'%'}},x:{ticks:{color:'#4a6080'}}}}
-});
+// ── LOGIN ─────────────────────────────────────────────────────
+function showLogin(){
+  document.getElementById('login-section').style.display='block';
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('error-msg').textContent='';
+  document.getElementById('pin-input').value='';
+}
+function selectUser(u,btn){
+  selectedUser=u;
+  document.querySelectorAll('.user-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('pin-input').focus();
+}
+function tryLogin(){
+  if(!selectedUser){ document.getElementById('error-msg').textContent='Selecciona tu perfil'; return; }
+  const pin=document.getElementById('pin-input').value;
+  if(USERS[selectedUser].pin!==pin){ document.getElementById('error-msg').textContent='PIN incorrecto'; return; }
+  currentUser=selectedUser;
+  document.getElementById('login-section').style.display='none';
+  document.getElementById('form-section').style.display='block';
+  document.getElementById('btn-acceso').style.display='none';
+  document.getElementById('btn-salir').style.display='block';
+  document.getElementById('f-casino').value=USERS[currentUser].casino;
+  document.getElementById('form-title').textContent='NUEVO PICK — '+currentUser.toUpperCase();
+  const colors={axel:'var(--accent)',jared:'var(--yellow)',fernando:'var(--purple)'};
+  document.getElementById('logged-badge').innerHTML=
+    `<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:${colors[currentUser]};letter-spacing:1px;">● ${currentUser.toUpperCase()}</span>`;
+  renderAll();
+}
+function doLogout(){
+  currentUser=null; selectedUser=null;
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('btn-acceso').style.display='block';
+  document.getElementById('btn-salir').style.display='none';
+  renderAll();
+}
+
+// ── SUBMIT PICK ───────────────────────────────────────────────
+function submitPick(){
+  const away=document.getElementById('f-away').value.trim();
+  const home=document.getElementById('f-home').value.trim();
+  const tipo=document.getElementById('f-tipo').value;
+  const sobre=document.getElementById('f-sobre').value.trim();
+  const dec=document.getElementById('f-dec').value;
+  const hora=document.getElementById('f-hora').value.trim();
+  if(!away||!home||!sobre||!dec){ alert('Completa todos los campos'); return; }
+  const hoy=new Date().toLocaleDateString('es-MX',{timeZone:'America/Mexico_City'});
+  picks.push({
+    id:Date.now(), fecha:hoy, away, home, tipo, sobre,
+    oddsD:parseFloat(dec), oddsA:decToAm(dec),
+    hora, casino:USERS[currentUser].casino,
+    analista:currentUser, resultado:'pendiente', marcador:''
+  });
+  localStorage.setItem('apicks_picks_v2',JSON.stringify(picks));
+  ['f-away','f-home','f-sobre','f-dec','f-am','f-hora'].forEach(id=>document.getElementById(id).value='');
+  renderAll();
+}
+
+// ── RESULTADO ─────────────────────────────────────────────────
+function setRes(id,res){
+  const marcador=res==='win'?(prompt('Marcador final (ej: 7-3):')||''):'';
+  picks=picks.map(p=>p.id===id?{...p,resultado:res,marcador}:p);
+  localStorage.setItem('apicks_picks_v2',JSON.stringify(picks));
+  renderAll();
+}
+
+// ── RENDER CARD ───────────────────────────────────────────────
+function card(p){
+  const resC=p.resultado==='win'?'ps-win':p.resultado==='loss'?'ps-loss':'ps-pending';
+  const resL=p.resultado==='win'?'✅ GANADO':p.resultado==='loss'?'❌ PERDIDO':'⏳ PENDIENTE';
+  const tipoC=p.tipo==='ML'?'pt-ml':'pt-ou';
+  const casinoC=p.casino==='Bet365'?'cd-bet365':'cd-play';
+  const btns=currentUser&&p.resultado==='pendiente'?`
+    <div class="result-btns">
+      <button class="rbtn rbtn-win" onclick="setRes(${p.id},'win')">✅ GANÓ</button>
+      <button class="rbtn rbtn-loss" onclick="setRes(${p.id},'loss')">❌ PERDIÓ</button>
+    </div>`:'';
+  return `<div class="pick-card pick-${p.analista}">
+    <div class="pick-top">
+      <span class="analyst-badge ab-${p.analista}">${p.analista.toUpperCase()}</span>
+      <span class="pick-status ${resC}">${resL}</span>
+    </div>
+    <div class="matchup">${p.away} <span>vs</span> ${p.home}</div>
+    <div class="pick-type-row">
+      <span class="pick-type ${tipoC}">${p.tipo} · ${p.sobre}</span>
+      <span class="pick-odds-dec">${p.oddsD.toFixed(2)}</span>
+      <span class="pick-odds-am">(${p.oddsA})</span>
+    </div>
+    <div class="pick-meta">
+      <span><span class="casino-dot ${casinoC}"></span>${p.casino}</span>
+      <span>🕐 ${p.hora||'--'}</span>
+      <span>📅 ${p.fecha}</span>
+    </div>
+    ${p.marcador?`<div class="result-score">Marcador: ${p.marcador}</div>`:''}
+    ${btns}
+  </div>`;
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────
+function renderAll(){
+  const hoy=new Date().toLocaleDateString('es-MX',{timeZone:'America/Mexico_City'});
+  const hoyP=picks.filter(p=>p.fecha===hoy);
+  const histP=picks.filter(p=>p.fecha!==hoy);
+
+  const ch=document.getElementById('picks-hoy');
+  ch.innerHTML=hoyP.length?hoyP.map(card).join(''):'<div class="empty-state">Sin picks publicados hoy todavía.</div>';
+  document.getElementById('badge-hoy').textContent=hoyP.length+' PICKS';
+
+  const ch2=document.getElementById('picks-hist');
+  ch2.innerHTML=histP.length?histP.map(card).join(''):'<div class="empty-state">Sin historial aún.</div>';
+  document.getElementById('badge-hist').textContent=histP.length+' PICKS';
+
+  // Stats globales
+  const res=picks.filter(p=>p.resultado!=='pendiente');
+  const wins=res.filter(p=>p.resultado==='win').length;
+  const losses=res.filter(p=>p.resultado==='loss').length;
+  const hit=res.length?Math.round(wins/res.length*100):null;
+  document.getElementById('s-hitrate').textContent=hit!==null?hit+'%':'--%';
+  document.getElementById('s-record').textContent=wins+'W · '+losses+'L';
+  document.getElementById('s-hoy').textContent=hoyP.length;
+  document.getElementById('s-total').textContent=picks.length;
+
+  // Racha
+  let racha=0,dir='';
+  for(let i=picks.length-1;i>=0;i--){
+    const r=picks[i].resultado;
+    if(r==='pendiente') continue;
+    if(!dir) dir=r;
+    if(r===dir) racha++; else break;
+  }
+  document.getElementById('s-racha').textContent=racha||'--';
+  document.getElementById('s-racha-sub').textContent=racha?(dir==='win'?'✅ ganados seguidos':'❌ perdidos seguidos'):'sin datos';
+
+  // Stats analistas
+  ['axel','jared','fernando'].forEach(a=>{
+    const ap=picks.filter(p=>p.analista===a&&p.resultado!=='pendiente');
+    const aw=ap.filter(p=>p.resultado==='win').length;
+    const al=ap.filter(p=>p.resultado==='loss').length;
+    const ah=ap.length?Math.round(aw/ap.length*100)+'%':'--%';
+    document.getElementById('st-'+a).innerHTML=`
+      <div class="ast"><div class="ast-val">${aw}</div><div class="ast-lbl">W</div></div>
+      <div class="ast"><div class="ast-val">${al}</div><div class="ast-lbl">L</div></div>
+      <div class="ast"><div class="ast-val">${ah}</div><div class="ast-lbl">HIT</div></div>`;
+  });
+}
+
+renderAll();
 </script>
 </body>
 </html>
