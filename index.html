@@ -6,12 +6,11 @@
 <title>APIcks - Ponce de Leon Picks</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#080c10;--surface:#0e1520;--border:#1a2535;--accent:#00d4ff;--green:#00ff88;--red:#ff3d5a;--yellow:#ffd700;--purple:#b86eff;--muted:#4a6080;--text:#c8dff0;--heading:#fff;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
-
-/* INTRO */
 #intro-screen{position:fixed;inset:0;background:#080c10;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
 #intro-logo{width:100px;height:100px;border-radius:18px;object-fit:cover;opacity:0;transform:scale(0.7);transition:opacity 0.6s ease,transform 0.6s cubic-bezier(0.34,1.56,0.64,1);}
 #intro-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,8vw,62px);letter-spacing:6px;color:#fff;opacity:0;transform:translateY(10px);transition:opacity 0.5s ease,transform 0.5s ease;}
@@ -20,8 +19,6 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 #intro-bar{height:100%;width:0;background:linear-gradient(90deg,#00d4ff,#00ff88);transition:width 1.8s ease;}
 #page-wrapper{opacity:0;transition:opacity 0.7s ease;}
 #page-wrapper.visible{opacity:1;}
-
-/* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,#080c10,#0a1220);position:sticky;top:0;z-index:100;gap:12px;}
 .logo{display:flex;align-items:center;gap:12px;min-width:0;}
 .logo-img{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0;}
@@ -37,11 +34,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .btn-login:hover{border-color:var(--accent);color:var(--accent);}
 .btn-logout{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;transition:all .2s;}
 .btn-logout:hover{border-color:var(--red);color:var(--red);}
-
-/* MAIN */
 main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
-
-/* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
@@ -52,16 +45,10 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .stat-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
 .stat-val{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;color:var(--heading);}
 .stat-sub{font-size:10px;color:var(--muted);margin-top:4px;}
-
-/* SECTION HEADERS */
 .sec-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .sec-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--heading);}
 .badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;background:var(--border);border-radius:4px;color:var(--accent);letter-spacing:1px;}
-
-/* PICKS GRID */
 .picks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
-
-/* PICK CARD */
 .pick-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;}
 .pick-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;}
 .pick-axel::before{background:var(--accent);}
@@ -88,6 +75,13 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .casino-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px;}
 .cd-bet365{background:#00c753;}
 .cd-play{background:#ff6b35;}
+.stake-wrap{margin:10px 0 6px;}
+.stake-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.stake-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+.stake-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
+.stake-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.stake-bar-fill{height:100%;border-radius:2px;transition:width .3s;}
+.stake-conf-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;margin-top:3px;}
 .result-score{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);padding-top:8px;border-top:1px solid var(--border);}
 .result-btns{display:flex;gap:6px;margin-top:8px;}
 .rbtn{flex:1;padding:5px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px;transition:all .2s;}
@@ -95,11 +89,9 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .rbtn-win:hover{background:rgba(0,255,136,.2);}
 .rbtn-loss{border:1px solid rgba(255,61,90,.3);background:rgba(255,61,90,.1);color:var(--red);}
 .rbtn-loss:hover{background:rgba(255,61,90,.2);}
-
-/* ANALYSTS */
 .analysts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .analyst-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;}
-.analyst-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;}
+.analyst-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:'Bebas Neue',sans-serif;font-size:18px;}
 .av-axel{background:rgba(0,212,255,.15);color:var(--accent);border:2px solid rgba(0,212,255,.4);}
 .av-jared{background:rgba(255,215,0,.12);color:var(--yellow);border:2px solid rgba(255,215,0,.4);}
 .av-fernando{background:rgba(184,110,255,.12);color:var(--purple);border:2px solid rgba(184,110,255,.4);}
@@ -109,8 +101,6 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .ast{background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;text-align:center;}
 .ast-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--heading);}
 .ast-lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;}
-
-/* LOGIN */
 .login-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:360px;margin:0 auto;}
 .login-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--heading);margin-bottom:4px;}
 .login-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:20px;letter-spacing:1px;}
@@ -127,8 +117,6 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .btn-enter{width:100%;padding:10px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,212,255,.12);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
 .btn-enter:hover{background:rgba(0,212,255,.22);}
 .error-msg{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--red);text-align:center;margin-top:8px;min-height:14px;}
-
-/* FORM */
 .pick-form{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;}
 .form-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .form-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--heading);}
@@ -138,27 +126,20 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .ff input:focus,.ff select:focus{border-color:var(--accent);}
 .ff select option{background:#0e1520;}
 .ff input[readonly]{color:var(--muted);}
+.stake-field{grid-column:1/-1;}
 .btn-submit{padding:10px 22px;border-radius:8px;border:1px solid var(--green);background:rgba(0,255,136,.12);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
 .btn-submit:hover{background:rgba(0,255,136,.22);}
-
-/* CONÓCENOS */
 .conocenos{border-top:1px solid var(--border);padding-top:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
 .social-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:13px;transition:border-color .2s,color .2s;}
-
-/* FOOTER */
 footer{text-align:center;padding:20px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px;line-height:1.8;}
 footer span{color:var(--accent);}
-
-/* EMPTY STATE */
 .empty-state{text-align:center;padding:48px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;grid-column:1/-1;}
-
-/* RESPONSIVE */
-@media(max-width:900px){.analysts-grid{grid-template-columns:repeat(3,1fr);}}
+.loading-state{text-align:center;padding:48px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;grid-column:1/-1;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 @media(max-width:700px){
   header{padding:12px 14px;flex-wrap:wrap;}
   .logo-img{width:40px;height:40px;}
   .logo-text{font-size:21px;}
-  .logo-byline,.logo-sub{font-size:8px;}
   main{padding:14px 12px;gap:16px;}
   .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;}
   .stat-val{font-size:28px;}
@@ -168,30 +149,28 @@ footer span{color:var(--accent);}
   .sec-title{font-size:17px;}
   .conocenos{flex-direction:column;align-items:flex-start;}
 }
-@media(max-width:400px){.logo-text{font-size:18px;letter-spacing:2px;}.stat-val{font-size:24px;}}
+@media(max-width:400px){.logo-text{font-size:18px;}.stat-val{font-size:24px;}}
 </style>
 </head>
 <body>
 
-<!-- INTRO ANIMACIÓN -->
 <div id="intro-screen">
-  <img id="intro-logo" src="dddlogo.png" alt="APIcks"
+  <img id="intro-logo" src="ddelogo.png" alt="APIcks"
     onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22%3E%3Crect width=%2236%22 height=%2236%22 fill=%22%2300d4ff%22/%3E%3Ctext x=%2218%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22%3E⚾%3C/text%3E%3C/svg%3E';">
-  <div id="intro-title">PONCE DE LEON PICKS</div>
-  <div id="intro-sub">MLB, NBA, NFL y soccer</div>
+  <div id="intro-title">APIcks</div>
+  <div id="intro-sub">by Ponce de Leon Picks</div>
   <div id="intro-bar-wrap"><div id="intro-bar"></div></div>
 </div>
 
 <div id="page-wrapper">
-
 <header>
   <div class="logo">
-    <img src="dddlogo.png" alt="Logo" class="logo-img"
+    <img src="ddelogo.png" alt="Logo" class="logo-img"
       onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22%3E%3Crect width=%2236%22 height=%2236%22 fill=%22%2300d4ff%22/%3E%3Ctext x=%2218%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22%3E⚾%3C/text%3E%3C/svg%3E';">
     <div>
-      <div class="logo-text">PONCE DE LEON PICKS</div>
-      <div class="logo-byline">(by Jared, Axel y Fernando)</div>
-      <div class="logo-sub"> Picks · Lectura de líneas · Estadísticas</div>
+      <div class="logo-text">APIcks</div>
+      <div class="logo-byline">(by Ponce de Leon Picks, Axel)</div>
+      <div class="logo-sub">Lectura de líneas · rendimiento · la mera vena</div>
     </div>
   </div>
   <div class="header-right">
@@ -203,8 +182,6 @@ footer span{color:var(--accent);}
 </header>
 
 <main>
-
-  <!-- STATS GLOBALES -->
   <div class="stats-row">
     <div class="stat-card sc-green">
       <div class="stat-label">HIT RATE</div>
@@ -228,7 +205,6 @@ footer span{color:var(--accent);}
     </div>
   </div>
 
-  <!-- LOGIN (visible solo cuando se pide) -->
   <div id="login-section" style="display:none;">
     <div class="login-wrap">
       <div class="login-title">ACCESO ANALISTAS</div>
@@ -244,7 +220,6 @@ footer span{color:var(--accent);}
     </div>
   </div>
 
-  <!-- FORM NUEVO PICK (solo cuando logueado) -->
   <div id="form-section" style="display:none;">
     <div class="pick-form">
       <div class="form-header">
@@ -267,32 +242,44 @@ footer span{color:var(--accent);}
         <div class="ff"><label>Momio Americano</label><input type="text" id="f-am" readonly placeholder="-120"></div>
         <div class="ff"><label>Hora del partido</label><input type="text" id="f-hora" placeholder="7:05 PM CDMX"></div>
         <div class="ff"><label>Casino</label><input type="text" id="f-casino" readonly></div>
+        <div class="ff stake-field">
+          <label>Stake / Confianza</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:2px;">
+            <input type="range" id="f-stake" min="1" max="100" value="50"
+              style="flex:1;accent-color:var(--accent);height:4px;"
+              oninput="updateStake()">
+            <span id="stake-val" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent);min-width:38px;text-align:right;font-weight:600;">50%</span>
+          </div>
+          <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px;">
+            <div id="stake-bar-form" style="height:100%;width:50%;background:var(--accent);border-radius:2px;transition:width .2s,background .2s;"></div>
+          </div>
+          <div id="stake-conf-form" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent);margin-top:4px;letter-spacing:1px;">CONFIANZA MEDIA</div>
+        </div>
       </div>
       <button class="btn-submit" onclick="submitPick()">+ PUBLICAR PICK</button>
     </div>
   </div>
 
-  <!-- PICKS DE HOY -->
   <div>
     <div class="sec-header">
       <div class="sec-title">PICKS DE HOY</div>
       <div class="badge" id="badge-hoy">0 PICKS</div>
     </div>
     <div class="picks-grid" id="picks-hoy">
-      <div class="empty-state">Sin picks publicados hoy todavía.</div>
+      <div class="loading-state">Cargando picks...</div>
     </div>
   </div>
 
-  <!-- HISTORIAL -->
   <div>
     <div class="sec-header">
       <div class="sec-title">HISTORIAL</div>
       <div class="badge" id="badge-hist">0 PICKS</div>
     </div>
-    <div class="picks-grid" id="picks-hist"></div>
+    <div class="picks-grid" id="picks-hist">
+      <div class="loading-state">Cargando historial...</div>
+    </div>
   </div>
 
-  <!-- ANALISTAS -->
   <div>
     <div class="sec-header">
       <div class="sec-title">ANALISTAS</div>
@@ -332,7 +319,6 @@ footer span{color:var(--accent);}
     </div>
   </div>
 
-  <!-- CONÓCENOS -->
   <div class="conocenos">
     <div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Conócenos</div>
@@ -345,61 +331,94 @@ footer span{color:var(--accent);}
       <a href="https://www.youtube.com/@Ponce_de_leon_picks" target="_blank" class="social-btn" onmouseover="this.style.borderColor='red';this.style.color='red'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"><i class="fab fa-youtube"></i></a>
     </div>
   </div>
-
 </main>
 
 <footer>
   APIcks · <span>by Ponce de Leon Picks, Axel</span> · Bet365 · PlayDoIt
 </footer>
-
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────
+// ── SUPABASE ──────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(
+  'https://dggxfyjjzinwaoywkzci.supabase.co',
+  'sb_publishable_l9w1oeMJpenG3cR1qNqvcg_zRqEKClz'
+);
+// ⚠️  IMPORTANTE: Reemplaza la key de arriba con tu anon public key real
+// La encuentras en Supabase → Settings → API → "anon public"
+// Empieza con eyJ... y es diferente a la sb_secret que me diste
+
+// ── CONFIG USUARIOS ───────────────────────────────────────────
 const USERS = {
   axel:     { pin:'1111', casino:'Bet365',   color:'axel' },
   jared:    { pin:'2222', casino:'PlayDoIt', color:'jared' },
   fernando: { pin:'3333', casino:'PlayDoIt', color:'fernando' }
 };
-// ⚠️ CAMBIA LOS PINES ANTES DE SUBIR A NETLIFY
+// ⚠️ CAMBIA LOS PINES ANTES DE SUBIR
 
 // ── STATE ─────────────────────────────────────────────────────
 let currentUser = null;
 let selectedUser = null;
-let picks = JSON.parse(localStorage.getItem('apicks_picks_v2') || '[]');
+let allPicks = [];
 
 // ── INTRO ─────────────────────────────────────────────────────
 (function(){
-  const logo  = document.getElementById('intro-logo');
-  const title = document.getElementById('intro-title');
-  const sub   = document.getElementById('intro-sub');
-  const bar   = document.getElementById('intro-bar');
-  const scr   = document.getElementById('intro-screen');
-  const page  = document.getElementById('page-wrapper');
-  setTimeout(()=>{ logo.style.opacity='1'; logo.style.transform='scale(1)'; }, 120);
-  setTimeout(()=>{ title.style.opacity='1'; title.style.transform='translateY(0)'; }, 420);
-  setTimeout(()=>{ sub.style.opacity='1'; bar.style.width='100%'; }, 680);
-  setTimeout(()=>{ logo.style.transition='transform 0.35s ease'; logo.style.transform='scale(1.07)'; setTimeout(()=>logo.style.transform='scale(1)',350); }, 1900);
-  setTimeout(()=>{ scr.style.transition='opacity 0.7s ease'; scr.style.opacity='0'; scr.style.pointerEvents='none'; page.classList.add('visible'); }, 2500);
-  setTimeout(()=>scr.remove(), 3300);
+  const logo=document.getElementById('intro-logo');
+  const title=document.getElementById('intro-title');
+  const sub=document.getElementById('intro-sub');
+  const bar=document.getElementById('intro-bar');
+  const scr=document.getElementById('intro-screen');
+  const page=document.getElementById('page-wrapper');
+  setTimeout(()=>{logo.style.opacity='1';logo.style.transform='scale(1)';},120);
+  setTimeout(()=>{title.style.opacity='1';title.style.transform='translateY(0)';},420);
+  setTimeout(()=>{sub.style.opacity='1';bar.style.width='100%';},680);
+  setTimeout(()=>{logo.style.transition='transform 0.35s ease';logo.style.transform='scale(1.07)';setTimeout(()=>logo.style.transform='scale(1)',350);},1900);
+  setTimeout(()=>{scr.style.transition='opacity 0.7s ease';scr.style.opacity='0';scr.style.pointerEvents='none';page.classList.add('visible');},2500);
+  setTimeout(()=>scr.remove(),3300);
 })();
 
 // ── RELOJ ─────────────────────────────────────────────────────
 function updateClock(){
-  document.getElementById('clock').textContent =
+  document.getElementById('clock').textContent=
     new Intl.DateTimeFormat('es-MX',{timeZone:'America/Mexico_City',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date())+' CDMX';
 }
-setInterval(updateClock,1000); updateClock();
+setInterval(updateClock,1000);
+updateClock();
 
 // ── DECIMAL → AMERICANO ───────────────────────────────────────
 function decToAm(d){
   d=parseFloat(d);
   if(!d||isNaN(d)) return '';
-  return d>=2 ? '+'+Math.round((d-1)*100) : Math.round(-100/(d-1)).toString();
+  return d>=2?'+'+Math.round((d-1)*100):Math.round(-100/(d-1)).toString();
 }
 document.getElementById('f-dec').addEventListener('input',function(){
-  document.getElementById('f-am').value = decToAm(this.value);
+  document.getElementById('f-am').value=decToAm(this.value);
 });
+
+// ── STAKE SLIDER ──────────────────────────────────────────────
+function stakeColor(v){
+  if(v<=25) return 'var(--red)';
+  if(v<=50) return 'var(--yellow)';
+  if(v<=75) return 'var(--accent)';
+  return 'var(--green)';
+}
+function stakeLabel(v){
+  if(v<=25) return 'CONFIANZA BAJA';
+  if(v<=50) return 'CONFIANZA MEDIA';
+  if(v<=75) return 'CONFIANZA ALTA';
+  return 'CONFIANZA MUY ALTA';
+}
+function updateStake(){
+  const v=parseInt(document.getElementById('f-stake').value);
+  const color=stakeColor(v);
+  document.getElementById('stake-val').textContent=v+'%';
+  document.getElementById('stake-val').style.color=color;
+  document.getElementById('stake-bar-form').style.width=v+'%';
+  document.getElementById('stake-bar-form').style.background=color;
+  document.getElementById('stake-conf-form').textContent=stakeLabel(v);
+  document.getElementById('stake-conf-form').style.color=color;
+}
 
 // ── LOGIN ─────────────────────────────────────────────────────
 function showLogin(){
@@ -415,9 +434,9 @@ function selectUser(u,btn){
   document.getElementById('pin-input').focus();
 }
 function tryLogin(){
-  if(!selectedUser){ document.getElementById('error-msg').textContent='Selecciona tu perfil'; return; }
+  if(!selectedUser){document.getElementById('error-msg').textContent='Selecciona tu perfil';return;}
   const pin=document.getElementById('pin-input').value;
-  if(USERS[selectedUser].pin!==pin){ document.getElementById('error-msg').textContent='PIN incorrecto'; return; }
+  if(USERS[selectedUser].pin!==pin){document.getElementById('error-msg').textContent='PIN incorrecto';return;}
   currentUser=selectedUser;
   document.getElementById('login-section').style.display='none';
   document.getElementById('form-section').style.display='block';
@@ -431,40 +450,71 @@ function tryLogin(){
   renderAll();
 }
 function doLogout(){
-  currentUser=null; selectedUser=null;
+  currentUser=null;selectedUser=null;
   document.getElementById('form-section').style.display='none';
   document.getElementById('btn-acceso').style.display='block';
   document.getElementById('btn-salir').style.display='none';
   renderAll();
 }
 
-// ── SUBMIT PICK ───────────────────────────────────────────────
-function submitPick(){
+// ── SUPABASE: CARGAR PICKS ────────────────────────────────────
+async function loadPicks(){
+  try {
+    const {data,error}=await sb.from('picks').select('*').order('created_at',{ascending:false});
+    if(error) throw error;
+    allPicks=data||[];
+    renderAll();
+  } catch(e){
+    console.error('Error cargando picks:',e);
+    document.getElementById('picks-hoy').innerHTML=
+      '<div class="empty-state">Error conectando con la base de datos.</div>';
+  }
+}
+
+// ── SUPABASE: PUBLICAR PICK ───────────────────────────────────
+async function submitPick(){
   const away=document.getElementById('f-away').value.trim();
   const home=document.getElementById('f-home').value.trim();
   const tipo=document.getElementById('f-tipo').value;
   const sobre=document.getElementById('f-sobre').value.trim();
   const dec=document.getElementById('f-dec').value;
   const hora=document.getElementById('f-hora').value.trim();
-  if(!away||!home||!sobre||!dec){ alert('Completa todos los campos'); return; }
+  const stake=parseInt(document.getElementById('f-stake').value);
+  if(!away||!home||!sobre||!dec){alert('Completa todos los campos');return;}
   const hoy=new Date().toLocaleDateString('es-MX',{timeZone:'America/Mexico_City'});
-  picks.push({
-    id:Date.now(), fecha:hoy, away, home, tipo, sobre,
-    oddsD:parseFloat(dec), oddsA:decToAm(dec),
-    hora, casino:USERS[currentUser].casino,
-    analista:currentUser, resultado:'pendiente', marcador:''
-  });
-  localStorage.setItem('apicks_picks_v2',JSON.stringify(picks));
-  ['f-away','f-home','f-sobre','f-dec','f-am','f-hora'].forEach(id=>document.getElementById(id).value='');
-  renderAll();
+  const btn=document.querySelector('.btn-submit');
+  btn.textContent='Publicando...';btn.disabled=true;
+  try {
+    const {error}=await sb.from('picks').insert([{
+      fecha:hoy, away, home, tipo, sobre,
+      odds_decimal:parseFloat(dec),
+      odds_americano:decToAm(dec),
+      hora, casino:USERS[currentUser].casino,
+      analista:currentUser, stake,
+      resultado:'pendiente', marcador:''
+    }]);
+    if(error) throw error;
+    ['f-away','f-home','f-sobre','f-dec','f-am','f-hora'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-stake').value=50;
+    updateStake();
+    await loadPicks();
+  } catch(e){
+    alert('Error al publicar: '+e.message);
+  } finally {
+    btn.textContent='+ PUBLICAR PICK';btn.disabled=false;
+  }
 }
 
-// ── RESULTADO ─────────────────────────────────────────────────
-function setRes(id,res){
+// ── SUPABASE: MARCAR RESULTADO ────────────────────────────────
+async function setRes(id,res){
   const marcador=res==='win'?(prompt('Marcador final (ej: 7-3):')||''):'';
-  picks=picks.map(p=>p.id===id?{...p,resultado:res,marcador}:p);
-  localStorage.setItem('apicks_picks_v2',JSON.stringify(picks));
-  renderAll();
+  try {
+    const {error}=await sb.from('picks').update({resultado:res,marcador}).eq('id',id);
+    if(error) throw error;
+    await loadPicks();
+  } catch(e){
+    alert('Error actualizando resultado: '+e.message);
+  }
 }
 
 // ── RENDER CARD ───────────────────────────────────────────────
@@ -473,6 +523,9 @@ function card(p){
   const resL=p.resultado==='win'?'✅ GANADO':p.resultado==='loss'?'❌ PERDIDO':'⏳ PENDIENTE';
   const tipoC=p.tipo==='ML'?'pt-ml':'pt-ou';
   const casinoC=p.casino==='Bet365'?'cd-bet365':'cd-play';
+  const sv=p.stake||50;
+  const sc=stakeColor(sv);
+  const sl=stakeLabel(sv);
   const btns=currentUser&&p.resultado==='pendiente'?`
     <div class="result-btns">
       <button class="rbtn rbtn-win" onclick="setRes(${p.id},'win')">✅ GANÓ</button>
@@ -486,13 +539,23 @@ function card(p){
     <div class="matchup">${p.away} <span>vs</span> ${p.home}</div>
     <div class="pick-type-row">
       <span class="pick-type ${tipoC}">${p.tipo} · ${p.sobre}</span>
-      <span class="pick-odds-dec">${p.oddsD.toFixed(2)}</span>
-      <span class="pick-odds-am">(${p.oddsA})</span>
+      <span class="pick-odds-dec">${parseFloat(p.odds_decimal).toFixed(2)}</span>
+      <span class="pick-odds-am">(${p.odds_americano})</span>
     </div>
     <div class="pick-meta">
       <span><span class="casino-dot ${casinoC}"></span>${p.casino}</span>
       <span>🕐 ${p.hora||'--'}</span>
       <span>📅 ${p.fecha}</span>
+    </div>
+    <div class="stake-wrap">
+      <div class="stake-row">
+        <span class="stake-lbl">CONFIANZA</span>
+        <span class="stake-pct" style="color:${sc};">${sv}%</span>
+      </div>
+      <div class="stake-bar-bg">
+        <div class="stake-bar-fill" style="width:${sv}%;background:${sc};"></div>
+      </div>
+      <div class="stake-conf-label" style="color:${sc};">${sl}</div>
     </div>
     ${p.marcador?`<div class="result-score">Marcador: ${p.marcador}</div>`:''}
     ${btns}
@@ -502,8 +565,8 @@ function card(p){
 // ── RENDER ALL ────────────────────────────────────────────────
 function renderAll(){
   const hoy=new Date().toLocaleDateString('es-MX',{timeZone:'America/Mexico_City'});
-  const hoyP=picks.filter(p=>p.fecha===hoy);
-  const histP=picks.filter(p=>p.fecha!==hoy);
+  const hoyP=allPicks.filter(p=>p.fecha===hoy);
+  const histP=allPicks.filter(p=>p.fecha!==hoy);
 
   const ch=document.getElementById('picks-hoy');
   ch.innerHTML=hoyP.length?hoyP.map(card).join(''):'<div class="empty-state">Sin picks publicados hoy todavía.</div>';
@@ -513,20 +576,18 @@ function renderAll(){
   ch2.innerHTML=histP.length?histP.map(card).join(''):'<div class="empty-state">Sin historial aún.</div>';
   document.getElementById('badge-hist').textContent=histP.length+' PICKS';
 
-  // Stats globales
-  const res=picks.filter(p=>p.resultado!=='pendiente');
+  const res=allPicks.filter(p=>p.resultado!=='pendiente');
   const wins=res.filter(p=>p.resultado==='win').length;
   const losses=res.filter(p=>p.resultado==='loss').length;
   const hit=res.length?Math.round(wins/res.length*100):null;
   document.getElementById('s-hitrate').textContent=hit!==null?hit+'%':'--%';
   document.getElementById('s-record').textContent=wins+'W · '+losses+'L';
   document.getElementById('s-hoy').textContent=hoyP.length;
-  document.getElementById('s-total').textContent=picks.length;
+  document.getElementById('s-total').textContent=allPicks.length;
 
-  // Racha
   let racha=0,dir='';
-  for(let i=picks.length-1;i>=0;i--){
-    const r=picks[i].resultado;
+  for(let i=allPicks.length-1;i>=0;i--){
+    const r=allPicks[i].resultado;
     if(r==='pendiente') continue;
     if(!dir) dir=r;
     if(r===dir) racha++; else break;
@@ -534,9 +595,8 @@ function renderAll(){
   document.getElementById('s-racha').textContent=racha||'--';
   document.getElementById('s-racha-sub').textContent=racha?(dir==='win'?'✅ ganados seguidos':'❌ perdidos seguidos'):'sin datos';
 
-  // Stats analistas
   ['axel','jared','fernando'].forEach(a=>{
-    const ap=picks.filter(p=>p.analista===a&&p.resultado!=='pendiente');
+    const ap=allPicks.filter(p=>p.analista===a&&p.resultado!=='pendiente');
     const aw=ap.filter(p=>p.resultado==='win').length;
     const al=ap.filter(p=>p.resultado==='loss').length;
     const ah=ap.length?Math.round(aw/ap.length*100)+'%':'--%';
@@ -547,7 +607,9 @@ function renderAll(){
   });
 }
 
-renderAll();
+// ── INIT ──────────────────────────────────────────────────────
+loadPicks();
+setInterval(loadPicks, 30000); // refresca cada 30 segundos automático
 </script>
 </body>
 </html>
