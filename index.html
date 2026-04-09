@@ -152,6 +152,8 @@ footer span{color:var(--accent);}
 .modal-body textarea:focus{outline:none;border-color:var(--accent);}
 .modal-save{background:rgba(0,212,255,.15);border:1px solid var(--accent);color:var(--accent);padding:10px 20px;border-radius:8px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;transition:all .2s;}
 .modal-save:hover{background:rgba(0,212,255,.3);}
+.modal-view-only .modal-body{color:var(--text);line-height:1.6;}
+.modal-view-only .modal-body p{background:var(--bg);padding:12px;border-radius:8px;margin-bottom:8px;}
 
 /* Selector Derecha/Parlay */
 .pick-type-selector{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;}
@@ -171,11 +173,15 @@ footer span{color:var(--accent);}
 .add-pick-btn:hover{border-color:var(--accent);background:rgba(0,212,255,.1);}
 .parlay-total-odds{margin-top:12px;padding:8px;background:rgba(0,212,255,.1);border-radius:6px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);}
 
-/* Texto del historial */
-.history-text-mode{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.8;color:var(--text);white-space:pre-wrap;}
-.history-text-mode.active{display:block;}
+/* Historial en texto compacto */
+.history-text-preview{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.8;color:var(--text);}
+.history-text-full{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.8;color:var(--text);white-space:pre-wrap;}
+.history-text-full.active{display:block;}
+.history-text-preview.hidden{display:none;}
 .history-toggle{background:none;border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:6px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s;margin-left:auto;}
 .history-toggle:hover{border-color:var(--accent);background:rgba(0,212,255,.1);}
+.ver-mas-btn{background:none;border:1px solid var(--border);color:var(--accent);padding:8px 16px;border-radius:6px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s;margin-top:12px;width:100%;}
+.ver-mas-btn:hover{border-color:var(--accent);background:rgba(0,212,255,.1);}
 
 @media(max-width:700px){
   header{padding:12px 14px;flex-wrap:wrap;}
@@ -332,12 +338,11 @@ footer span{color:var(--accent);}
     <div class="sec-header">
       <div class="sec-title">HISTORIAL</div>
       <div class="badge" id="badge-hist">0 PICKS</div>
-      <button class="history-toggle" onclick="toggleHistoryView()">📄 VER TEXTO</button>
     </div>
-    <div class="picks-grid" id="picks-hist">
-      <div class="loading-state">Cargando historial...</div>
-    </div>
-    <div id="history-text-mode" class="history-text-mode"></div>
+    <div class="picks-grid" id="picks-hist" style="display:none;"></div>
+    <div id="history-text-preview" class="history-text-preview"></div>
+    <div id="history-text-full" class="history-text-full"></div>
+    <button class="ver-mas-btn" id="ver-mas-btn" onclick="toggleFullHistory()">📖 VER HISTORIAL COMPLETO</button>
   </div>
 
   <div>
@@ -398,16 +403,15 @@ footer span{color:var(--accent);}
 </footer>
 </div>
 
-<!-- MODAL PARA ANÁLISIS -->
+<!-- MODAL PARA ANÁLISIS (dos modos: edición para analistas, solo lectura para público) -->
 <div id="analysisModal" class="modal" onclick="closeModalOnOutside(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
+  <div class="modal-content" onclick="event.stopPropagation()" id="modal-content">
     <div class="modal-header">
-      <h3>📝 ANÁLISIS DEL PICK</h3>
+      <h3 id="modal-title">📝 ANÁLISIS DEL PICK</h3>
       <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
-    <div class="modal-body">
-      <textarea id="analysis-text" rows="6" placeholder="Escribe tu análisis detallado aquí...&#10;&#10;Ejemplo:&#10;• Patrón detectado: baja de -0.03 en favorito&#10;• Movimiento de línea significativo&#10;• Contexto del partido&#10;• Razonamiento del pick"></textarea>
-      <button class="modal-save" onclick="saveAnalysis()">💾 GUARDAR ANÁLISIS</button>
+    <div class="modal-body" id="modal-body">
+      <!-- El contenido se llena dinámicamente -->
     </div>
   </div>
 </div>
@@ -434,7 +438,7 @@ let allPicks = [];
 let currentPickForAnalysis = null;
 let currentPickType = 'straight';
 let parlayPicks = [];
-let currentViewMode = 'cards';
+let showFullHistory = false;
 
 // ── INTRO ─────────────────────────────────────────────────────
 (function(){
@@ -560,12 +564,35 @@ function removeParlayPick(index){
   renderParlayPicks();
 }
 
-// ── MODAL ─────────────────────────────────────────────────────
+// ── MODAL (con dos modos) ─────────────────────────────────────
 function openAnalysis(pick){
   currentPickForAnalysis = pick;
   const modal = document.getElementById('analysisModal');
-  const textarea = document.getElementById('analysis-text');
-  textarea.value = pick.analisis || '';
+  const modalBody = document.getElementById('modal-body');
+  const modalTitle = document.getElementById('modal-title');
+  
+  if(currentUser){
+    // Modo edición (analista logueado)
+    modalTitle.innerHTML = '✏️ EDITAR ANÁLISIS';
+    modalBody.innerHTML = `
+      <textarea id="analysis-text" rows="6" placeholder="Escribe tu análisis detallado aquí...&#10;&#10;Ejemplo:&#10;• Patrón detectado: baja de -0.03 en favorito&#10;• Movimiento de línea significativo&#10;• Contexto del partido&#10;• Razonamiento del pick">${pick.analisis || ''}</textarea>
+      <button class="modal-save" onclick="saveAnalysis()">💾 GUARDAR ANÁLISIS</button>
+    `;
+  } else {
+    // Modo solo lectura (público)
+    modalTitle.innerHTML = '📊 ANÁLISIS DEL PICK';
+    const analysisText = pick.analisis || 'No hay análisis disponible para este pick aún.';
+    modalBody.innerHTML = `
+      <div class="modal-view-only">
+        <div class="matchup" style="margin-bottom:12px;">${pick.away} vs ${pick.home}</div>
+        <div class="pick-type-row" style="margin-bottom:12px;">
+          <span class="pick-type ${pick.tipo === 'PARLAY' ? 'pt-parlay' : (pick.tipo === 'ML' ? 'pt-ml' : 'pt-ou')}">${pick.tipo} · ${pick.sobre}</span>
+          <span class="pick-odds-dec">${parseFloat(pick.odds_decimal).toFixed(2)}</span>
+        </div>
+        <p style="background:var(--bg);padding:12px;border-radius:8px;line-height:1.6;">${analysisText}</p>
+      </div>
+    `;
+  }
   modal.style.display = 'flex';
 }
 
@@ -603,37 +630,66 @@ async function saveAnalysis(){
   }
 }
 
-// ── HISTORIAL TEXTO ───────────────────────────────────────────
-function toggleHistoryView(){
-  const picksHistDiv = document.getElementById('picks-hist');
-  const textModeDiv = document.getElementById('history-text-mode');
+// ── HISTORIAL EN TEXTO ────────────────────────────────────────
+function generateHistoryText(limit = null){
   const hoy = new Date().toLocaleDateString('es-MX', {timeZone:'America/Mexico_City'});
-  const histPicks = allPicks.filter(p => p.fecha !== hoy);
+  let histPicks = allPicks.filter(p => p.fecha !== hoy);
   
-  if(currentViewMode === 'cards'){
-    if(histPicks.length){
-      const textLines = histPicks.map(p => {
-        if(p.is_parlay && p.parlay_data){
-          const parlayObj = JSON.parse(p.parlay_data);
-          return `${p.fecha} | PARLAY\n${parlayObj.picks.map((pick, i) => `  ${i+1}. ${pick.homeVsAway}, ${pick.pick} @ ${pick.odds}`).join('\n')}\n  Momio total: ${parlayObj.totalOdds}\n  Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}\n─────────────────────────`;
-        } else {
-          return `${p.fecha} | ${p.home} vs ${p.away}, ${p.tipo} ${p.sobre} @ ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
-        }
-      }).join('\n\n');
-      textModeDiv.textContent = textLines;
-    } else {
-      textModeDiv.textContent = 'Sin historial aún.';
+  if(limit && limit > 0){
+    histPicks = histPicks.slice(0, limit);
+  }
+  
+  if(histPicks.length === 0) return 'No hay picks en el historial aún.';
+  
+  return histPicks.map(p => {
+    if(p.is_parlay && p.parlay_data){
+      try{
+        const parlayObj = JSON.parse(p.parlay_data);
+        return `${p.fecha} | PARLAY (${parlayObj.picks.length} picks) | Momio total: ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
+      } catch(e){}
     }
-    picksHistDiv.style.display = 'none';
-    textModeDiv.classList.add('active');
-    currentViewMode = 'text';
-    document.querySelector('.history-toggle').innerHTML = '🃏 VER CARDS';
+    return `${p.fecha} | ${p.home} vs ${p.away}, ${p.tipo} ${p.sobre} @ ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
+  }).join('\n─────────────────────────\n');
+}
+
+function updateHistoryDisplay(){
+  const previewDiv = document.getElementById('history-text-preview');
+  const fullDiv = document.getElementById('history-text-full');
+  const verMasBtn = document.getElementById('ver-mas-btn');
+  const totalPicks = allPicks.filter(p => p.fecha !== new Date().toLocaleDateString('es-MX', {timeZone:'America/Mexico_City'})).length;
+  
+  if(totalPicks <= 5){
+    // Si hay 5 o menos, mostrar todo directamente
+    previewDiv.innerHTML = generateHistoryText(null).replace(/\n/g, '<br>');
+    previewDiv.classList.remove('hidden');
+    fullDiv.classList.remove('active');
+    verMasBtn.style.display = 'none';
   } else {
-    picksHistDiv.style.display = 'grid';
-    textModeDiv.classList.remove('active');
-    currentViewMode = 'cards';
-    document.querySelector('.history-toggle').innerHTML = '📄 VER TEXTO';
-    renderAll();
+    previewDiv.innerHTML = generateHistoryText(5).replace(/\n/g, '<br>');
+    fullDiv.innerHTML = generateHistoryText(null).replace(/\n/g, '<br>');
+    previewDiv.classList.remove('hidden');
+    fullDiv.classList.remove('active');
+    verMasBtn.style.display = 'block';
+    verMasBtn.textContent = '📖 VER HISTORIAL COMPLETO';
+    showFullHistory = false;
+  }
+}
+
+function toggleFullHistory(){
+  const previewDiv = document.getElementById('history-text-preview');
+  const fullDiv = document.getElementById('history-text-full');
+  const verMasBtn = document.getElementById('ver-mas-btn');
+  
+  if(!showFullHistory){
+    previewDiv.classList.add('hidden');
+    fullDiv.classList.add('active');
+    verMasBtn.textContent = '⬆️ VER SOLO ÚLTIMOS 5';
+    showFullHistory = true;
+  } else {
+    previewDiv.classList.remove('hidden');
+    fullDiv.classList.remove('active');
+    verMasBtn.textContent = '📖 VER HISTORIAL COMPLETO';
+    showFullHistory = false;
   }
 }
 
@@ -790,9 +846,9 @@ function card(p){
       `).join('');
       
       const btns = currentUser && p.resultado === 'pendiente' ? `
-        <div class="result-btns">
-          <button class="rbtn rbtn-win" onclick="event.stopPropagation();setRes(${p.id},'win')">✅ GANÓ</button>
-          <button class="rbtn rbtn-loss" onclick="event.stopPropagation();setRes(${p.id},'loss')">❌ PERDIÓ</button>
+        <div class="result-btns" onclick="event.stopPropagation()">
+          <button class="rbtn rbtn-win" onclick="setRes(${p.id},'win')">✅ GANÓ</button>
+          <button class="rbtn rbtn-loss" onclick="setRes(${p.id},'loss')">❌ PERDIÓ</button>
         </div>` : '';
       
       return `<div class="pick-card pick-${p.analista}" onclick="openAnalysis(${JSON.stringify(p).replace(/"/g, '&quot;')})">
@@ -861,17 +917,13 @@ function card(p){
 function renderAll(){
   const hoy=new Date().toLocaleDateString('es-MX',{timeZone:'America/Mexico_City'});
   const hoyP=allPicks.filter(p=>p.fecha===hoy);
-  const histP=allPicks.filter(p=>p.fecha!==hoy);
 
   const ch=document.getElementById('picks-hoy');
   ch.innerHTML=hoyP.length?hoyP.map(card).join(''):'<div class="empty-state">Sin picks publicados hoy todavía.</div>';
   document.getElementById('badge-hoy').textContent=hoyP.length+' PICKS';
+  document.getElementById('badge-hist').textContent=allPicks.filter(p=>p.fecha!==hoy).length+' PICKS';
 
-  if(currentViewMode === 'cards'){
-    const ch2=document.getElementById('picks-hist');
-    ch2.innerHTML=histP.length?histP.map(card).join(''):'<div class="empty-state">Sin historial aún.</div>';
-    document.getElementById('badge-hist').textContent=histP.length+' PICKS';
-  }
+  updateHistoryDisplay();
 
   const res=allPicks.filter(p=>p.resultado!=='pendiente');
   const wins=res.filter(p=>p.resultado==='win').length;
