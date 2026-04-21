@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
 <style>
 :root{--bg:#080c10;--surface:#0e1520;--border:#1a2535;--accent:#00d4ff;--green:#00ff88;--red:#ff3d5a;--yellow:#ffd700;--purple:#b86eff;--muted:#4a6080;--text:#c8dff0;--heading:#fff;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -34,6 +36,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .btn-login:hover{border-color:var(--accent);color:var(--accent);}
 .btn-logout{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;transition:all .2s;}
 .btn-logout:hover{border-color:var(--red);color:var(--red);}
+.btn-premium{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--yellow);color:var(--yellow);background:rgba(255,215,0,.08);cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.btn-premium:hover{background:rgba(255,215,0,.15);transform:scale(1.05);}
+.btn-premium.active{background:rgba(255,215,0,.2);color:var(--heading);}
 main{max-width:1200px;margin:0 auto;padding:24px 16px;display:grid;gap:20px;}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
@@ -183,6 +188,158 @@ footer span{color:var(--accent);}
 .ver-mas-btn{background:none;border:1px solid var(--border);color:var(--accent);padding:8px 16px;border-radius:6px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s;margin-top:12px;width:100%;}
 .ver-mas-btn:hover{border-color:var(--accent);background:rgba(0,212,255,.1);}
 
+/* PREMIUM MODAL STYLES */
+.premium-modal .modal-content {
+  max-width: 480px;
+  border-color: var(--yellow);
+}
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 2px 8px;
+  background: rgba(255,215,0,.15);
+  color: var(--yellow);
+  border: 1px solid rgba(255,215,0,.3);
+  border-radius: 4px;
+  letter-spacing: 1px;
+  margin-left: 8px;
+}
+.premium-lock {
+  color: var(--yellow);
+  font-size: 10px;
+}
+.pick-card.premium-locked {
+  opacity: 0.6;
+  filter: blur(0.5px);
+  pointer-events: none;
+  position: relative;
+}
+.pick-card.premium-locked::after {
+  content: '🔒 PREMIUM';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(8,12,16,.9);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  z-index: 10;
+}
+.premium-price {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  color: var(--yellow);
+  text-align: center;
+  margin: 16px 0 4px;
+  line-height: 1;
+}
+.premium-price small {
+  font-size: 18px;
+  color: var(--muted);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.premium-features {
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+.premium-features li {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.premium-features li:last-child { border-bottom: none; }
+.premium-features li i { color: var(--green); font-size: 10px; }
+#card-element {
+  background: var(--bg);
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+}
+#card-errors {
+  color: var(--red);
+  font-size: 11px;
+  margin-top: -8px;
+  margin-bottom: 12px;
+  min-height: 18px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.btn-premium-pay {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--yellow);
+  color: #000;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: bold;
+  font-size: 13px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-premium-pay:hover {
+  background: #e6c200;
+  transform: scale(1.02);
+}
+.btn-premium-pay:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.premium-status-bar {
+  background: rgba(255,215,0,.08);
+  border: 1px solid rgba(255,215,0,.2);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.premium-status-bar.active {
+  background: rgba(0,255,136,.08);
+  border-color: rgba(0,255,136,.2);
+}
+.premium-status-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--yellow);
+}
+.premium-status-bar.active .premium-status-text {
+  color: var(--green);
+}
+.premium-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.premium-toggle label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.premium-toggle input[type="checkbox"] {
+  accent-color: var(--yellow);
+  cursor: pointer;
+}
+
 @media(max-width:700px){
   header{padding:12px 14px;flex-wrap:wrap;}
   .logo-img{width:40px;height:40px;}
@@ -198,6 +355,7 @@ footer span{color:var(--accent);}
 }
 @media(max-width:400px){.logo-text{font-size:18px;}.stat-val{font-size:24px;}}
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -221,7 +379,8 @@ footer span{color:var(--accent);}
   <div class="header-right">
     <div class="live-txt"><div class="live-dot"></div>LIVE</div>
     <div class="clock" id="clock">--:-- CDMX</div>
-    <button class="btn-login" id="btn-acceso" onclick="showLogin()">⚡ ACCESO</button>
+    <button class="btn-premium" id="btn-premium" onclick="openPremiumModal()">PREMIUM</button>
+    <button class="btn-login" id="btn-acceso" onclick="showLogin()">ACCESO</button>
     <button class="btn-logout" id="btn-salir" style="display:none" onclick="doLogout()">SALIR</button>
   </div>
 </header>
@@ -272,13 +431,19 @@ footer span{color:var(--accent);}
         <div id="logged-badge"></div>
       </div>
       
+      <!-- Toggle Premium para analistas -->
+      <div class="premium-toggle" id="premium-toggle" style="display:none;">
+        <input type="checkbox" id="f-premium" onchange="togglePremiumPick()">
+        <label for="f-premium">Marcar como PICK PREMIUM (solo suscriptores)</label>
+      </div>
+      
       <!-- Selector Derecha / Parlay -->
       <div class="pick-type-selector">
         <button class="selector-btn active" onclick="switchPickType('straight')">📊 DERECHA</button>
         <button class="selector-btn" onclick="switchPickType('parlay')">🎲 PARLAY</button>
       </div>
 
-      <!-- Formulario Derecha (igual que antes) -->
+      <!-- Formulario Derecha -->
       <div id="straight-form" class="form-straight active">
         <div class="form-grid">
           <div class="ff"><label>Equipo Away</label><input type="text" id="f-away" placeholder="Yankees"></div>
@@ -312,7 +477,7 @@ footer span{color:var(--accent);}
         </div>
       </div>
 
-      <!-- Formulario Parlay (dinámico) -->
+      <!-- Formulario Parlay -->
       <div id="parlay-form" class="form-parlay">
         <div class="ff" style="margin-bottom:12px;"><label>Casino</label><input type="text" id="p-casino" readonly></div>
         <div class="parlay-picks-list" id="parlay-picks-container"></div>
@@ -403,15 +568,61 @@ footer span{color:var(--accent);}
 </footer>
 </div>
 
-<!-- MODAL PARA ANÁLISIS (dos modos: edición para analistas, solo lectura para público) -->
+<!-- MODAL PARA ANÁLISIS -->
 <div id="analysisModal" class="modal" onclick="closeModalOnOutside(event)">
   <div class="modal-content" onclick="event.stopPropagation()" id="modal-content">
     <div class="modal-header">
       <h3 id="modal-title">📝 ANÁLISIS DEL PICK</h3>
       <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
-    <div class="modal-body" id="modal-body">
-      <!-- El contenido se llena dinámicamente -->
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL PREMIUM / PAGO -->
+<div id="premiumModal" class="modal premium-modal" onclick="closePremiumModalOnOutside(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3> ACCESO PREMIUM</h3>
+      <button class="modal-close" onclick="closePremiumModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Estado activo -->
+      <div id="premium-active-status" class="premium-status-bar" style="display:none;">
+        <span class="premium-status-text">✅ Suscripción activa · Renovación automática</span>
+        <button class="btn-logout" onclick="cancelSubscription()" style="border-color:var(--red);color:var(--red);">CANCELAR</button>
+      </div>
+      
+      <!-- Formulario de pago -->
+      <div id="premium-payment-form">
+        <div style="text-align:center; font-family:'IBM Plex Mono'; font-size:13px; color:var(--text); line-height:1.5;">
+          Desbloquea picks exclusivos con análisis detallado<br>y acceso prioritario a las mejores líneas.
+        </div>
+        
+        <div class="premium-price">
+          $199 <small>MXN / mes</small>
+        </div>
+        
+        <ul class="premium-features">
+          <li><i class="fas fa-check"></i> Todos los picks premium sin restricción</li>
+          <li><i class="fas fa-check"></i> Análisis detallado de cada pick</li>
+          <li><i class="fas fa-check"></i> Notificaciones de picks en vivo</li>
+          <li><i class="fas fa-check"></i> Acceso al historial completo premium</li>
+          <li><i class="fas fa-check"></i> Cancela cuando quieras</li>
+        </ul>
+        
+        <div id="card-element"></div>
+        <div id="card-errors" role="alert"></div>
+        
+        <button class="btn-premium-pay" id="premium-pay-btn" onclick="handlePremiumPayment()">
+          💳 SUSCRIBIRME AHORA
+        </button>
+        
+        <div style="font-size:10px; color:var(--muted); text-align:center; margin-top:12px; line-height:1.5;">
+          🔒 Pago seguro con Stripe · No guardamos datos de tarjetas<br>
+          Se cargará $199 MXN mensualmente. Cancela anytime.
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -423,6 +634,12 @@ const sb = createClient(
   'https://dggxfyjjzinwaoywkzci.supabase.co',
   'sb_publishable_l9w1oeMJpenG3cR1qNqvcg_zRqEKClz'
 );
+
+// ── STRIPE CONFIG ─────────────────────────────────────────────
+// REEMPLAZA CON TU CLAVE PÚBLICA DE STRIPE
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_PUBLISHABLE_KEY_HERE';
+const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+let stripeElements, stripeCardElement;
 
 // ── CONFIG USUARIOS ───────────────────────────────────────────
 const USERS = {
@@ -439,6 +656,9 @@ let currentPickForAnalysis = null;
 let currentPickType = 'straight';
 let parlayPicks = [];
 let showFullHistory = false;
+let isPremiumSubscriber = false;
+let stripeCustomerId = null;
+let currentSubscriptionId = null;
 
 // ── INTRO ─────────────────────────────────────────────────────
 (function(){
@@ -518,6 +738,12 @@ function switchPickType(type){
   }
 }
 
+// ── PREMIUM TOGGLE (analistas) ────────────────────────────────
+function togglePremiumPick() {
+  const checkbox = document.getElementById('f-premium');
+  // Visual feedback opcional
+}
+
 // ── PARLAY FUNCTIONS ──────────────────────────────────────────
 function renderParlayPicks(){
   const container = document.getElementById('parlay-picks-container');
@@ -564,22 +790,210 @@ function removeParlayPick(index){
   renderParlayPicks();
 }
 
+// ── STRIPE / PREMIUM FUNCTIONS ────────────────────────────────
+function initStripeElements() {
+  if (!stripeElements) {
+    stripeElements = stripe.elements({
+      fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap' }]
+    });
+    stripeCardElement = stripeElements.create('card', {
+      style: {
+        base: {
+          color: '#c8dff0',
+          fontFamily: '"IBM Plex Mono", monospace',
+          fontSize: '14px',
+          '::placeholder': { color: '#4a6080' },
+          iconColor: '#00d4ff'
+        },
+        invalid: { 
+          color: '#ff3d5a',
+          iconColor: '#ff3d5a'
+        }
+      },
+      hidePostalCode: true
+    });
+    stripeCardElement.mount('#card-element');
+    stripeCardElement.on('change', ({error}) => {
+      const displayError = document.getElementById('card-errors');
+      displayError.textContent = error ? error.message : '';
+    });
+  }
+}
+
+async function checkPremiumStatus() {
+  try {
+    // Verificar si hay una sesión de suscripción activa en Supabase
+    // Esto requiere una Edge Function o tabla de suscripciones
+    const { data, error } = await sb
+      .from('subscriptions')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (error || !data) {
+      isPremiumSubscriber = false;
+      updatePremiumUI();
+      return;
+    }
+    
+    isPremiumSubscriber = true;
+    stripeCustomerId = data.stripe_customer_id;
+    currentSubscriptionId = data.stripe_subscription_id;
+    updatePremiumUI();
+  } catch(e) {
+    console.log('No hay suscripción activa');
+    isPremiumSubscriber = false;
+    updatePremiumUI();
+  }
+}
+
+function updatePremiumUI() {
+  const btn = document.getElementById('btn-premium');
+  if (isPremiumSubscriber) {
+    btn.textContent = '✅ PREMIUM';
+    btn.classList.add('active');
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    btn.style.background = 'rgba(0,255,136,.08)';
+  } else {
+    btn.textContent = '🔥 PREMIUM';
+    btn.classList.remove('active');
+  }
+}
+
+function openPremiumModal() {
+  const modal = document.getElementById('premiumModal');
+  const paymentForm = document.getElementById('premium-payment-form');
+  const activeStatus = document.getElementById('premium-active-status');
+  
+  if (isPremiumSubscriber) {
+    paymentForm.style.display = 'none';
+    activeStatus.style.display = 'flex';
+    activeStatus.classList.add('active');
+  } else {
+    paymentForm.style.display = 'block';
+    activeStatus.style.display = 'none';
+    activeStatus.classList.remove('active');
+    initStripeElements();
+  }
+  
+  modal.style.display = 'flex';
+}
+
+function closePremiumModal() {
+  document.getElementById('premiumModal').style.display = 'none';
+}
+
+function closePremiumModalOnOutside(event) {
+  if (event.target === document.getElementById('premiumModal')) {
+    closePremiumModal();
+  }
+}
+
+async function handlePremiumPayment() {
+  const payBtn = document.getElementById('premium-pay-btn');
+  payBtn.disabled = true;
+  payBtn.textContent = 'PROCESANDO...';
+  
+  try {
+    // 1. Crear PaymentMethod con Stripe (tokenización)
+    const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: stripeCardElement,
+      billing_details: {
+        // Opcional: puedes pedir email aquí
+      }
+    });
+    
+    if (pmError) throw new Error(pmError.message);
+    
+    // 2. Llamar a Edge Function de Supabase para crear suscripción
+    // La Edge Function se comunica con Stripe usando la clave secreta
+    const { data, error } = await sb.functions.invoke('create-subscription', {
+      body: { 
+        paymentMethodId: paymentMethod.id,
+        priceId: 'price_1234567890', // Tu Price ID de Stripe
+        email: null // Opcional
+      }
+    });
+    
+    if (error) throw new Error(error.message || 'Error al crear suscripción');
+    
+    // 3. Manejar SCA (Strong Customer Authentication) si es necesario
+    if (data.clientSecret && data.status === 'requires_action') {
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret);
+      if (confirmError) throw new Error(confirmError.message);
+    }
+    
+    // 4. Éxito
+    if (data.status === 'active' || data.status === 'succeeded') {
+      isPremiumSubscriber = true;
+      stripeCustomerId = data.customerId;
+      currentSubscriptionId = data.subscriptionId;
+      
+      // Guardar en localStorage para persistencia de sesión
+      localStorage.setItem('premium_access', 'true');
+      localStorage.setItem('stripe_customer_id', data.customerId);
+      
+      closePremiumModal();
+      updatePremiumUI();
+      renderAll(); // Re-render para mostrar picks premium
+      alert('¡Suscripción activada! Ahora tienes acceso a todos los picks premium.');
+    } else {
+      throw new Error('Estado inesperado: ' + data.status);
+    }
+  } catch (err) {
+    document.getElementById('card-errors').textContent = err.message;
+  } finally {
+    payBtn.disabled = false;
+    payBtn.textContent = '💳 SUSCRIBIRME AHORA';
+  }
+}
+
+async function cancelSubscription() {
+  if (!confirm('¿Cancelar tu suscripción premium? Perderás acceso inmediatamente.')) return;
+  
+  try {
+    const { data, error } = await sb.functions.invoke('cancel-subscription', {
+      body: { subscriptionId: currentSubscriptionId }
+    });
+    
+    if (error) throw error;
+    
+    isPremiumSubscriber = false;
+    localStorage.removeItem('premium_access');
+    localStorage.removeItem('stripe_customer_id');
+    updatePremiumUI();
+    renderAll();
+    closePremiumModal();
+    alert('Suscripción cancelada correctamente.');
+  } catch(e) {
+    alert('Error al cancelar: ' + e.message);
+  }
+}
+
 // ── MODAL (con dos modos) ─────────────────────────────────────
 function openAnalysis(pick){
+  // Si es premium y no está suscrito, no abrir análisis
+  if (pick.is_premium && !isPremiumSubscriber && !currentUser) {
+    openPremiumModal();
+    return;
+  }
+  
   currentPickForAnalysis = pick;
   const modal = document.getElementById('analysisModal');
   const modalBody = document.getElementById('modal-body');
   const modalTitle = document.getElementById('modal-title');
   
   if(currentUser){
-    // Modo edición (analista logueado)
     modalTitle.innerHTML = '✏️ EDITAR ANÁLISIS';
     modalBody.innerHTML = `
-      <textarea id="analysis-text" rows="6" placeholder="Escribe tu análisis detallado aquí...&#10;&#10;Ejemplo:&#10;• Patrón detectado: baja de -0.03 en favorito&#10;• Movimiento de línea significativo&#10;• Contexto del partido&#10;• Razonamiento del pick">${pick.analisis || ''}</textarea>
+      <textarea id="analysis-text" rows="6" placeholder="Escribe tu análisis detallado aquí...">${pick.analisis || ''}</textarea>
       <button class="modal-save" onclick="saveAnalysis()">💾 GUARDAR ANÁLISIS</button>
     `;
   } else {
-    // Modo solo lectura (público)
     modalTitle.innerHTML = '📊 ANÁLISIS DEL PICK';
     const analysisText = pick.analisis || 'No hay análisis disponible para este pick aún.';
     modalBody.innerHTML = `
@@ -635,6 +1049,11 @@ function generateHistoryText(limit = null){
   const hoy = new Date().toLocaleDateString('es-MX', {timeZone:'America/Mexico_City'});
   let histPicks = allPicks.filter(p => p.fecha !== hoy);
   
+  // Filtrar premium si no está suscrito
+  if (!isPremiumSubscriber && !currentUser) {
+    histPicks = histPicks.filter(p => !p.is_premium);
+  }
+  
   if(limit && limit > 0){
     histPicks = histPicks.slice(0, limit);
   }
@@ -642,13 +1061,14 @@ function generateHistoryText(limit = null){
   if(histPicks.length === 0) return 'No hay picks en el historial aún.';
   
   return histPicks.map(p => {
+    const premiumTag = p.is_premium ? ' [🔒 PREMIUM]' : '';
     if(p.is_parlay && p.parlay_data){
       try{
         const parlayObj = JSON.parse(p.parlay_data);
-        return `${p.fecha} | PARLAY (${parlayObj.picks.length} picks) | Momio total: ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
+        return `${p.fecha}${premiumTag} | PARLAY (${parlayObj.picks.length} picks) | Momio total: ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
       } catch(e){}
     }
-    return `${p.fecha} | ${p.home} vs ${p.away}, ${p.tipo} ${p.sobre} @ ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
+    return `${p.fecha}${premiumTag} | ${p.home} vs ${p.away}, ${p.tipo} ${p.sobre} @ ${p.odds_decimal} | Resultado: ${p.resultado === 'win' ? '✅ GANADO' : (p.resultado === 'loss' ? '❌ PERDIDO' : '⏳ PENDIENTE')}`;
   }).join('\n─────────────────────────\n');
 }
 
@@ -656,10 +1076,15 @@ function updateHistoryDisplay(){
   const previewDiv = document.getElementById('history-text-preview');
   const fullDiv = document.getElementById('history-text-full');
   const verMasBtn = document.getElementById('ver-mas-btn');
-  const totalPicks = allPicks.filter(p => p.fecha !== new Date().toLocaleDateString('es-MX', {timeZone:'America/Mexico_City'})).length;
   
-  if(totalPicks <= 5){
-    // Si hay 5 o menos, mostrar todo directamente
+  // Calcular total considerando filtro premium
+  const hoy = new Date().toLocaleDateString('es-MX', {timeZone:'America/Mexico_City'});
+  let totalPicks = allPicks.filter(p => p.fecha !== hoy);
+  if (!isPremiumSubscriber && !currentUser) {
+    totalPicks = totalPicks.filter(p => !p.is_premium);
+  }
+  
+  if(totalPicks.length <= 5){
     previewDiv.innerHTML = generateHistoryText(null).replace(/\n/g, '<br>');
     previewDiv.classList.remove('hidden');
     fullDiv.classList.remove('active');
@@ -718,6 +1143,10 @@ function tryLogin(){
   document.getElementById('f-casino').value=USERS[currentUser].casino;
   document.getElementById('p-casino').value=USERS[currentUser].casino;
   document.getElementById('form-title').textContent='NUEVO PICK — '+currentUser.toUpperCase();
+  
+  // Mostrar toggle premium para analistas
+  document.getElementById('premium-toggle').style.display = 'flex';
+  
   const colors={axel:'var(--accent)',jared:'var(--yellow)',fernando:'var(--purple)'};
   document.getElementById('logged-badge').innerHTML=
     `<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:${colors[currentUser]};letter-spacing:1px;">● ${currentUser.toUpperCase()}</span>`;
@@ -726,6 +1155,7 @@ function tryLogin(){
 function doLogout(){
   currentUser=null;selectedUser=null;
   document.getElementById('form-section').style.display='none';
+  document.getElementById('premium-toggle').style.display = 'none';
   document.getElementById('btn-acceso').style.display='block';
   document.getElementById('btn-salir').style.display='none';
   renderAll();
@@ -753,6 +1183,8 @@ async function submitPick(){
   const btn=document.querySelector('.btn-submit');
   btn.textContent='Publicando...';btn.disabled=true;
   
+  const isPremium = document.getElementById('f-premium').checked;
+  
   try {
     if(currentPickType === 'parlay'){
       if(parlayPicks.length === 0){
@@ -779,7 +1211,8 @@ async function submitPick(){
         resultado: 'pendiente',
         marcador: '',
         is_parlay: true,
-        parlay_data: parlayData
+        parlay_data: parlayData,
+        is_premium: isPremium
       }]);
       if(error) throw error;
       parlayPicks = [];
@@ -801,12 +1234,14 @@ async function submitPick(){
         hora, casino:USERS[currentUser].casino,
         analista:currentUser, stake,
         resultado:'pendiente', marcador:'',
-        is_parlay:false
+        is_parlay:false,
+        is_premium: isPremium
       }]);
       if(error) throw error;
       
       ['f-away','f-home','f-sobre','f-dec','f-am','f-hora'].forEach(id=>document.getElementById(id).value='');
       document.getElementById('f-stake').value=50;
+      document.getElementById('f-premium').checked = false;
       updateStake();
     }
     await loadPicks();
@@ -834,7 +1269,11 @@ function card(p){
   const resC=p.resultado==='win'?'ps-win':p.resultado==='loss'?'ps-loss':'ps-pending';
   const resL=p.resultado==='win'?'✅ GANADO':p.resultado==='loss'?'❌ PERDIDO':'⏳ PENDIENTE';
   const hasAnalysis = p.analisis ? '📝 ' : '';
+  const isPremium = p.is_premium ? '<span class="premium-lock" title="Pick Premium">🔒</span> ' : '';
   const casinoC=p.casino==='Bet365'?'cd-bet365':'cd-play';
+  
+  // Si es premium y no está suscrito ni es analista, mostrar bloqueado
+  const isLocked = p.is_premium && !isPremiumSubscriber && !currentUser;
   
   if(p.is_parlay && p.parlay_data){
     try{
@@ -851,9 +1290,12 @@ function card(p){
           <button class="rbtn rbtn-loss" onclick="setRes(${p.id},'loss')">❌ PERDIÓ</button>
         </div>` : '';
       
-      return `<div class="pick-card pick-${p.analista}" onclick="openAnalysis(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+      const cardClass = isLocked ? 'pick-card premium-locked' : `pick-card pick-${p.analista}`;
+      const clickAction = isLocked ? `onclick="openPremiumModal()"` : `onclick="openAnalysis(${JSON.stringify(p).replace(/"/g, '&quot;')})"`;
+      
+      return `<div class="${cardClass}" ${clickAction}>
         <div class="pick-top">
-          <span class="analyst-badge ab-${p.analista}">${hasAnalysis}${p.analista.toUpperCase()}</span>
+          <span class="analyst-badge ab-${p.analista}">${hasAnalysis}${isPremium}${p.analista.toUpperCase()}</span>
           <span class="pick-status ${resC}">${resL}</span>
         </div>
         <div class="matchup">🎲 PARLAY (${parlayObj.picks.length} picks)</div>
@@ -882,9 +1324,12 @@ function card(p){
       <button class="rbtn rbtn-loss" onclick="setRes(${p.id},'loss')">❌ PERDIÓ</button>
     </div>`:'';
     
-  return `<div class="pick-card pick-${p.analista}" onclick="openAnalysis(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+  const cardClass = isLocked ? 'pick-card premium-locked' : `pick-card pick-${p.analista}`;
+  const clickAction = isLocked ? `onclick="openPremiumModal()"` : `onclick="openAnalysis(${JSON.stringify(p).replace(/"/g, '&quot;')})"`;
+    
+  return `<div class="${cardClass}" ${clickAction}>
     <div class="pick-top">
-      <span class="analyst-badge ab-${p.analista}">${hasAnalysis}${p.analista.toUpperCase()}</span>
+      <span class="analyst-badge ab-${p.analista}">${hasAnalysis}${isPremium}${p.analista.toUpperCase()}</span>
       <span class="pick-status ${resC}">${resL}</span>
     </div>
     <div class="matchup">${p.away} <span>vs</span> ${p.home}</div>
@@ -916,27 +1361,50 @@ function card(p){
 // ── RENDER ALL ────────────────────────────────────────────────
 function renderAll(){
   const hoy=new Date().toLocaleDateString('es-MX',{timeZone:'America/Mexico_City'});
-  const hoyP=allPicks.filter(p=>p.fecha===hoy);
+  
+  // Filtrar picks de hoy según premium
+  let hoyP = allPicks.filter(p=>p.fecha===hoy);
+  if (!isPremiumSubscriber && !currentUser) {
+    // Usuarios no premium ven solo picks gratuitos, pero SÍ ven que existen premium (bloqueados)
+    // No filtramos aquí para que se rendericen bloqueados
+  }
 
   const ch=document.getElementById('picks-hoy');
+  
+  // Contar visibles vs totales
+  const visibleHoy = hoyP.filter(p => !p.is_premium || isPremiumSubscriber || currentUser);
+  const totalHoy = hoyP.length;
+  
   ch.innerHTML=hoyP.length?hoyP.map(card).join(''):'<div class="empty-state">Sin picks publicados hoy todavía.</div>';
-  document.getElementById('badge-hoy').textContent=hoyP.length+' PICKS';
-  document.getElementById('badge-hist').textContent=allPicks.filter(p=>p.fecha!==hoy).length+' PICKS';
+  document.getElementById('badge-hoy').textContent=totalHoy+' PICKS';
+  
+  // Historial: contar solo visibles
+  let histPicks = allPicks.filter(p=>p.fecha!==hoy);
+  if (!isPremiumSubscriber && !currentUser) {
+    histPicks = histPicks.filter(p => !p.is_premium);
+  }
+  document.getElementById('badge-hist').textContent=histPicks.length+' PICKS';
 
   updateHistoryDisplay();
 
-  const res=allPicks.filter(p=>p.resultado!=='pendiente');
+  // Stats solo de picks visibles
+  let visiblePicks = allPicks;
+  if (!isPremiumSubscriber && !currentUser) {
+    visiblePicks = allPicks.filter(p => !p.is_premium);
+  }
+  
+  const res=visiblePicks.filter(p=>p.resultado!=='pendiente');
   const wins=res.filter(p=>p.resultado==='win').length;
   const losses=res.filter(p=>p.resultado==='loss').length;
   const hit=res.length?Math.round(wins/res.length*100):null;
   document.getElementById('s-hitrate').textContent=hit!==null?hit+'%':'--%';
   document.getElementById('s-record').textContent=wins+'W · '+losses+'L';
-  document.getElementById('s-hoy').textContent=hoyP.length;
-  document.getElementById('s-total').textContent=allPicks.length;
+  document.getElementById('s-hoy').textContent=visibleHoy.length;
+  document.getElementById('s-total').textContent=visiblePicks.length;
 
   let racha=0,dir='';
-  for(let i=allPicks.length-1;i>=0;i--){
-    const r=allPicks[i].resultado;
+  for(let i=visiblePicks.length-1;i>=0;i--){
+    const r=visiblePicks[i].resultado;
     if(r==='pendiente') continue;
     if(!dir) dir=r;
     if(r===dir) racha++; else break;
@@ -945,7 +1413,7 @@ function renderAll(){
   document.getElementById('s-racha-sub').textContent=racha?(dir==='win'?'✅ ganados seguidos':'❌ perdidos seguidos'):'sin datos';
 
   ['axel','jared','fernando'].forEach(a=>{
-    const ap=allPicks.filter(p=>p.analista===a&&p.resultado!=='pendiente');
+    let ap=visiblePicks.filter(p=>p.analista===a&&p.resultado!=='pendiente');
     const aw=ap.filter(p=>p.resultado==='win').length;
     const al=ap.filter(p=>p.resultado==='loss').length;
     const ah=ap.length?Math.round(aw/ap.length*100)+'%':'--%';
@@ -957,7 +1425,20 @@ function renderAll(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────
-loadPicks();
+async function init() {
+  // Verificar premium en localStorage primero (UX rápida)
+  if (localStorage.getItem('premium_access') === 'true') {
+    isPremiumSubscriber = true;
+    stripeCustomerId = localStorage.getItem('stripe_customer_id');
+    updatePremiumUI();
+  }
+  
+  // Luego verificar con servidor
+  await checkPremiumStatus();
+  await loadPicks();
+}
+
+init();
 setInterval(loadPicks, 30000);
 </script>
 </body>
